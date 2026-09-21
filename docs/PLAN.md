@@ -18,7 +18,7 @@ Entscheidungen des Users (Rückfragen beantwortet):
 |---|---|
 | Framework | React 19 + TypeScript + Vite |
 | Scratch-Books | global, laufen gegen die aktive DB |
-| Beispiel-DB | 8 Kerntabellen + `bewertung` (ohne `abo`) |
+| Beispiel-DB | Kernmodell gemäss `datenmodell.md` (Stand 2026-09-21: 8 Kerntabellen inkl. `abo`, `nutzer` mit `email`) + `bewertung`. Ursprünglich war «ohne abo» entschieden; die LPU hat `abo` am 2026-09-21 ins Kernmodell aufgenommen, der Seed folgt dem Modell. |
 | Deployment | GitHub Pages (Base-Pfad `/dmdb_app/`) |
 | Zielgeräte | Chrome, Safari, Firefox, Edge (aktuelle Versionen) auf Desktop **und Tablet** (iPad, Android) |
 
@@ -213,9 +213,9 @@ Tests erzeugen die Originalmeldungen, indem sie das fehlerhafte SQL wirklich geg
 **Eingecheckte `.sql`, einmalig generiert** durch `scripts/generate-seed.ts` (`tsx`, `npm run seed`, seeded PRNG mulberry32). Laufzeit-Generierung wäre nicht reproduzierbar; «Zurücksetzen» muss auf jedem Gerät dieselben Daten liefern, sonst stimmen die Musterlösungen der LPU nicht.
 
 - Ausgabe `src/seeds/musik_streaming.sql` mit Kopfkommentar («generiert von scripts/generate-seed.ts, nicht von Hand editieren»), `BEGIN; … COMMIT;`, Multi-Row-INSERTs in 50er-Blöcken.
-- Umfang gemäss `datenmodell.md`: 18 kuenstler (2 mit `gruendungsjahr` NULL, 1 ohne Album für LEFT JOIN im Additum), 36 album, ca. 300 song (`dauer_sek` 95 bis 420), 9 genre, song_genre 1 bis 2 pro Song, 25 nutzer, 50 playlist (5 bis 25 Songs, `position` lückenlos ab 1, `hinzugefuegt_am >= erstellt_am`), ca. 600 bewertung (sterne 1 bis 5, Schwerpunkt 3 bis 5). Daten ISO `YYYY-MM-DD` als TEXT, Jahre INTEGER.
+- Umfang gemäss `datenmodell.md`: 18 kuenstler (2 mit `gruendungsjahr` NULL, 1 ohne Album für LEFT JOIN im Additum), 36 album, ca. 300 song (`dauer_sek` 95 bis 420), 9 genre, song_genre 1 bis 2 pro Song, 25 nutzer (`benutzername` und `email` eindeutig, Alternativschlüssel), ca. 20 abo (1:1 zu nutzer, `typ`, `preis` REAL, `gueltig_bis`; einige Nutzer:innen ohne Abo), 50 playlist (5 bis 25 Songs, `position` lückenlos ab 1, `hinzugefuegt_am >= erstellt_am`), ca. 600 bewertung (sterne 1 bis 5, Schwerpunkt 3 bis 5). Daten ISO `YYYY-MM-DD` als TEXT, Jahre INTEGER. Der Dienst heisst im Skript «kanti♪tunes».
 - Fiktive Namen aus Wortpools (deutsch/englisch/schweizerisch gemischt), einige Titel mit «Love»/«Liebe»/«Nacht» für LIKE-Aufgaben, wenige doppelte Songtitel über Alben hinweg für DISTINCT. Länder: Schweiz, Deutschland, Österreich, USA, UK, Frankreich, Italien.
-- DDL lesbar formatiert (wird verbatim im DDL-Tab angezeigt): `INTEGER PRIMARY KEY`, `TEXT`, `INTEGER`, `NOT NULL`, tabellenweite `FOREIGN KEY (…) REFERENCES …(…)` ohne `ON DELETE`, zusammengesetzte PKs für `song_genre`, `playlist_song`, `bewertung`; einzig `bewertung.sterne` mit `CHECK (sterne BETWEEN 1 AND 5)`. Kein UNIQUE auf `benutzername`, keine STRICT-Tabellen.
+- DDL lesbar formatiert (wird verbatim im DDL-Tab angezeigt): `INTEGER PRIMARY KEY`, `TEXT`, `INTEGER`, `NOT NULL`, tabellenweite `FOREIGN KEY (…) REFERENCES …(…)` ohne `ON DELETE`, zusammengesetzte PKs für `song_genre`, `playlist_song`, `bewertung`; einzig `bewertung.sterne` mit `CHECK (sterne BETWEEN 1 AND 5)`. UNIQUE nur, wo das Modell Alternativschlüssel bzw. 1:1 vorgibt: `nutzer.benutzername`, `nutzer.email`, `abo.nutzer_id`. Keine STRICT-Tabellen.
 - Generator prüft referenzielle Integrität; der Seed-Test führt zusätzlich `PRAGMA foreign_key_check` aus.
 
 ## Projektstruktur

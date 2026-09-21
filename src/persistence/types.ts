@@ -50,3 +50,24 @@ export interface Settings {
   /** true, sobald der einmalige Hinweis zur lokalen Speicherung gesehen wurde. */
   storageNoticeSeen?: boolean;
 }
+
+/**
+ * Minimaler Vertrag der Engine, den die Persistenzschicht braucht.
+ *
+ * Bewusst als Interface statt als direkter Import von `src/db/engine.ts`:
+ * die Persistenz bleibt so frei von sql.js und in Tests durch eine Attrappe ersetzbar.
+ */
+export interface SeedBuilder {
+  /** Baut eine frische Datenbank aus dem Seed-SQL auf und liefert die SQLite-Datei als Bytes. */
+  buildFromSql(sql: string): Promise<Uint8Array>;
+}
+
+/** Ergebnis von `reconcileSeeds()`: welche Builtins angelegt, neu gebaut oder als veraltet markiert wurden. */
+export interface SeedReconcileResult {
+  /** IDs der Datenbanken, die es noch gar nicht gab. */
+  created: string[];
+  /** IDs der Datenbanken, die stillschweigend aus dem neuen Seed neu aufgebaut wurden. */
+  rebuilt: string[];
+  /** IDs der veränderten Datenbanken, deren Stand behalten und die als veraltet markiert wurden. */
+  outdated: string[];
+}

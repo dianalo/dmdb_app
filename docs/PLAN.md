@@ -20,6 +20,7 @@ Entscheidungen des Users (Rückfragen beantwortet):
 | Scratch-Books | global, laufen gegen die aktive DB |
 | Beispiel-DB | 8 Kerntabellen + `bewertung` (ohne `abo`) |
 | Deployment | GitHub Pages (Base-Pfad `/dmdb_app/`) |
+| Zielgeräte | Chrome, Safari, Firefox, Edge (aktuelle Versionen) auf Desktop **und Tablet** (iPad, Android) |
 
 Repo ist leer (nur `assets/dmdb_lpu` Symlink, darin nichts verändern). Node 25 / npm 11 sind installiert.
 
@@ -45,8 +46,37 @@ Stack dort: Vue 3 + Vuetify, Material Design Icons, CodeMirror 6, splitpanes, Ro
 | Persistenz | IndexedDB (siehe Datenschicht) |
 | State | React Context + Hooks, kleine Stores; kein Redux |
 | Icons | Material Design Icons als inline SVG (`@mdi/js`), wie WebTigerPython |
-| Tests | Vitest (Node, sql.js läuft in Node), `fake-indexeddb` |
+| Tests | Vitest (Node, sql.js läuft in Node), `fake-indexeddb`; Playwright-Smoke-Test in Chromium, Firefox und WebKit |
+| Browser-Ziel | `browserslist`: `defaults, not dead, safari >= 16, ios_saf >= 16`; Vite-Target `baseline-widely-available`; kein Polyfill nötig |
 | Deploy | GitHub Action `actions/deploy-pages` |
+
+## Browser-Kompatibilität und Tablet
+
+Die App muss in Chrome, Safari, Firefox und Edge laufen und auf Tablets gut bedienbar sein. Konsequenzen:
+
+**Plattform-APIs (alle in den Zielbrowsern verfügbar)**
+- WebAssembly, IndexedDB, `crypto.randomUUID()` (braucht HTTPS oder localhost, beides gegeben), `structuredClone`, `Uint8Array` in IndexedDB. Keine Chrome-only-APIs (kein `showOpenFilePicker`, kein OPFS, kein File System Access), keine COOP/COEP-Abhängigkeit.
+- Datei-Import über `<input type="file">`, Export über Blob-URL und `<a download>`; funktioniert in allen vier Browsern und auf iPadOS.
+- Safari löscht script-writable Storage (IndexedDB) nach **7 Safari-Nutzungstagen ohne Interaktion mit der Site**. Bei zwei Lektionen pro Woche und Schulferien ist das ein reales Risiko für Scratch-Books und veränderte DBs. Mitigation: `navigator.storage.persist()` anfragen (best effort) **und** eine einfache Sicherung in v1: Scratch-Book als `.sql` herunterladen und wieder öffnen, Datenbank als `.sqlite` herunterladen und importieren. Die vordefinierte DB ist ohnehin jederzeit per Reset wiederherstellbar.
+- iPadOS-Safari: **Smart Punctuation** ersetzt beim Tippen `'` durch `’`, `"` durch `“ ”` und `--` durch `—`. Das zerstört SQL-Strings und Kommentare. Gegenmassnahme: CodeMirror-Transaktionsfilter, der typografische Anführungszeichen und Gedankenstriche beim Einfügen in `'`, `"` und `--` zurückwandelt; zusätzlich Editor-Attribute `autocorrect="off"`, `autocapitalize="off"`, `spellcheck="false"`. Fehlerregel für `unrecognized token: "’"` mit Hinweis auf gerade Anführungszeichen, falls doch etwas durchkommt (z. B. aus der Zwischenablage).
+- Fokus/Tastatur: Virtuelle Tastatur deckt auf dem iPad die halbe Höhe ab. Layout mit `100dvh` statt `100vh`, Editor-Pane bleibt beim Tippen sichtbar, Ausgabe scrollt in ihrem eigenen Container.
+
+**Touch-Bedienung**
+- Alle interaktiven Elemente mindestens 44 × 44 px Trefferfläche, auch Tabellenköpfe zum Sortieren und Tab-Schliessen-Icons.
+- Kein Hover als einzige Affordance: Icon-Buttons haben sichtbaren Text oder ein `aria-label`; Hover-Effekte nur unter `@media (hover: hover)`. Tooltips sind Ergänzung, nicht Erklärung.
+- Kein Doppelklick, kein Rechtsklick, kein Drag-and-Drop als einziger Weg: Umbenennen und Löschen von Scratch-Books über ein «⋯»-Menü pro Eintrag.
+- Splitter mit Pointer Events (funktioniert mit Maus, Finger und Stift), Griff mindestens 12 px breit, plus Doppelfunktion «Ausgabe maximieren/normal» per Tap, weil präzises Ziehen auf Touch mühsam ist.
+- Der Button «Ausführen» ist immer sichtbar und gross, weil Ctrl/Cmd+Enter auf der Tablet-Tastatur nicht zur Verfügung steht. Tastenkürzel sind sekundär.
+- Ergebnistabellen und Tabellenansicht: Kopfzeile sticky, horizontales Scrollen innerhalb des Containers, nie die ganze Seite.
+
+**Responsives Layout (Breakpoints)**
+- ≥ 1024 px (Desktop, iPad quer): Layout wie in der Skizze, Seitenleiste 240 px fix sichtbar.
+- 768 bis 1023 px (iPad hoch, kleine Android-Tablets): Seitenleiste als einklappbarer Drawer (Toggle in der Toolbar, standardmässig zu), Editor und Ausgabe untereinander mit Splitter.
+- < 768 px (Smartphone, nicht primäres Ziel): gleiche Struktur, Toolbar umbricht auf zwei Zeilen, Tabs horizontal scrollbar. Muss funktionieren, muss nicht schön sein.
+
+**Test-Matrix**
+- Automatisiert: Playwright-Smoke-Test (App lädt, Beispiel-DB sichtbar, Query ausführen, Reload behält Stand) in den Projekten `chromium`, `firefox`, `webkit`, zusätzlich mit iPad-Viewport (`iPad (gen 7)` und quer) und Touch-Emulation.
+- Manuell vor jedem Release: Chrome und Edge (Desktop), Firefox (Desktop), Safari (macOS) und **Safari auf einem echten iPad** (Smart Punctuation, virtuelle Tastatur, Splitter), idealerweise ein Android-Tablet mit Chrome.
 
 ## UI-Konzept (v1, minimal)
 
@@ -69,11 +99,12 @@ Stack dort: Vue 3 + Vuetify, Material Design Icons, CodeMirror 6, splitpanes, Ro
 └──────────────┴───────────────────────────────────────────────────────┘
 ```
 
-**Toolbar**: App-Name, DB-Auswahl (Dropdown mit vordefinierten und eigenen DBs, Einträge «Neue Datenbank…» und bei eigenen DBs «Löschen»), Button «Zurücksetzen» (nur bei vordefinierten DBs, mit Bestätigung), Hilfe-Icon (öffnet SQL-Spickzettel als Dialog, kurz).
+**Toolbar**: Toggle für die Seitenleiste (nur unter 1024 px sichtbar), App-Name, DB-Auswahl (Dropdown mit vordefinierten und eigenen DBs, Einträge «Neue Datenbank…», «Datenbank importieren…» und bei eigenen DBs «Löschen» sowie «Herunterladen»), Button «Zurücksetzen» (nur bei vordefinierten DBs, mit Bestätigung), Hilfe-Icon (öffnet SQL-Spickzettel als Dialog, kurz). Alle Buttons mit Text oder `aria-label`, Trefferfläche 44 px.
 
 **Seitenleiste links**:
 - Abschnitt «Tabellen»: Liste der Tabellen der aktiven DB. Klick öffnet die Tabelle in einem **Tabellen-Tab** im Hauptbereich.
-- Abschnitt «Scratch-Books»: Liste der gespeicherten SQL-Dateien plus «Neu». Klick öffnet den Editor-Tab. Umbenennen per Doppelklick, Löschen per Icon mit Bestätigung.
+- Abschnitt «Scratch-Books»: Liste der gespeicherten SQL-Dateien plus «Neu» und «Öffnen…» (`.sql`-Datei vom Gerät). Klick öffnet den Editor-Tab. Pro Eintrag ein «⋯»-Menü mit «Umbenennen», «Herunterladen (.sql)», «Löschen» (mit Bestätigung). Kein Doppelklick, damit es auf Touch funktioniert.
+- Unter 1024 px ist die Seitenleiste ein Drawer, der sich nach einer Auswahl automatisch schliesst.
 
 **Hauptbereich, Tabs**:
 - Tab «SQL» (immer vorhanden, Ad-hoc-Editor, Inhalt wird ebenfalls persistiert, damit nichts verloren geht).
@@ -81,8 +112,8 @@ Stack dort: Vue 3 + Vuetify, Material Design Icons, CodeMirror 6, splitpanes, Ro
 - Ein Tab pro geöffnete Tabelle (Tabellenansicht).
 
 **Editor-Tab** (oben Editor, unten Ausgabe, Splitter dazwischen):
-- CodeMirror mit SQL-Highlighting, Zeilennummern, Autocomplete für Keywords und Tabellen-/Spaltennamen der aktiven DB.
-- «Ausführen» (Ctrl/Cmd+Enter): führt die Selektion aus, sonst den ganzen Inhalt. Mehrere Statements mit `;` erlaubt; pro Statement ein Ausgabeblock.
+- CodeMirror mit SQL-Highlighting, Zeilennummern, Autocomplete für Keywords und Tabellen-/Spaltennamen der aktiven DB. Autokorrektur, Autokapitalisierung und Rechtschreibprüfung abgeschaltet, Smart-Punctuation-Filter (siehe Browser-Abschnitt).
+- «Ausführen» als grosser, immer sichtbarer Button (Tastenkürzel Ctrl/Cmd+Enter zusätzlich): führt die Selektion aus, sonst den ganzen Inhalt. Mehrere Statements mit `;` erlaubt; pro Statement ein Ausgabeblock.
 - Ausgabe pro Statement:
   - SELECT: Resultattabelle (Spaltenköpfe, Zahlen rechtsbündig, NULL kursiv als `NULL`), darüber «312 Zeilen». Anzeige auf 1000 Zeilen begrenzt, mit Hinweis «Nur die ersten 1000 von N Zeilen angezeigt».
   - INSERT/UPDATE/DELETE: «3 Zeilen geändert».
@@ -91,13 +122,15 @@ Stack dort: Vue 3 + Vuetify, Material Design Icons, CodeMirror 6, splitpanes, Ro
 
 **Tabellen-Tab** (bewusst minimal):
 - Kopfzeile: Tabellenname, Zeilenzahl, Suchfeld (filtert über alle Spalten mit `LIKE '%…%'`), Umschalter «Daten | DDL».
-- Daten: Tabelle, Klick auf Spaltenkopf sortiert (↑/↓, dritter Klick hebt auf). Spalten mit PK-Marker (Schlüssel-Icon). Anzeige der ersten 200 Zeilen, Button «Mehr laden». Keine Inline-Bearbeitung, kein Spalten-Ausblenden, keine Filter pro Spalte.
+- Daten: Tabelle, Tipp/Klick auf Spaltenkopf sortiert (↑/↓, dritter Tipp hebt auf). Spalten mit PK-Marker (Schlüssel-Icon). Anzeige der ersten 200 Zeilen, Button «Mehr laden». Kopfzeile sticky, horizontales Scrollen im Container. Keine Inline-Bearbeitung, kein Spalten-Ausblenden, keine Filter pro Spalte.
 - DDL: `CREATE TABLE`-Statement aus `sqlite_master` mit Syntax-Highlighting, schreibgeschützt. Deckt Lernziel «DDL einer Tabelle anschauen» (Kapitel 7).
 - Tabellen-Tabs laden ihre Daten bei jeder Aktivierung neu, damit nach DML-Statements die Änderungen sichtbar sind.
 
 **Dialog «Neue Datenbank»**: Name, grosser Editor für das DDL-Script (mit Beispiel-Platzhalter `CREATE TABLE …`), Button «Erstellen». Script wird in einer frischen DB ausgeführt; bei Fehler bleibt der Dialog offen und zeigt die übersetzte Fehlermeldung.
 
-**Bewusst weggelassen in v1** (mögliche spätere Ausbaustufen): Dark Theme, Schema-Diagramm, Join-Visualisierung, GROUP-BY-Warnung (SQLite ist hier permissiv), Export (CSV), Query-Historie, Import bestehender .sqlite-Dateien, Mehrsprachigkeit, Login.
+**Sicherung (in v1 wegen Safari-Storage-Löschung, siehe Browser-Abschnitt)**: Scratch-Book herunterladen/öffnen als `.sql`, Datenbank herunterladen/importieren als `.sqlite` (die Bytes aus `db.export()` bzw. `new SQL.Database(bytes)`). Kein eigener Dialog, nur Menüeinträge.
+
+**Bewusst weggelassen in v1** (mögliche spätere Ausbaustufen): Dark Theme, Schema-Diagramm, Join-Visualisierung, GROUP-BY-Warnung (SQLite ist hier permissiv), CSV-Export von Resultaten, Query-Historie, Mehrsprachigkeit, Login, PWA/Offline-Installation.
 
 ## Datenschicht
 
@@ -143,7 +176,8 @@ DB `dmdb`, Version 1, Stores:
   - ältere Version und `modified === true` -> Stand behalten, `seedOutdated = true`, Badge «Neue Version der Beispieldatenbank. Zurücksetzen lädt sie.»
 - Reset = neue In-Memory-DB aus dem aktuellen Seed, `modified=false`, persistieren. Builtins sind nicht löschbar (UI und Guard im Store).
 - Neue DB aus DDL: Script in frischer `SQL.Database` ausführen; bei Fehler nichts persistieren, übersetzten Fehler im Dialog zeigen.
-- `navigator.storage.persist()` einmal anfragen (Safari-Eviction), best effort.
+- `navigator.storage.persist()` einmal anfragen, best effort. Safari kann Storage nach 7 Nutzungstagen ohne Interaktion löschen; deshalb Download/Import von DBs und Scratch-Books in v1 (siehe Browser-Abschnitt) und beim ersten Start ein kurzer, einmaliger Hinweis «Deine Daten liegen nur in diesem Browser».
+- Import einer `.sqlite`-Datei: Bytes mit `new SQL.Database(bytes)` öffnen, `PRAGMA integrity_check` ausführen; bei Fehler ablehnen. Als `kind: 'user'` speichern.
 
 ## Fehlerübersetzung (`src/db/errors/`)
 
@@ -158,7 +192,7 @@ Regeln (Schweizer Rechtschreibung, Du-Form):
 | `near "X": syntax error` | Syntaxfehler bei «X». | SQLite ist bei oder kurz vor «X» ins Stolpern geraten. Bei X in {FROM, WHERE, ORDER, GROUP, `)`}: Komma zu viel davor? Tippfehler-Vorschlag für Schlüsselwörter (`FORM` -> «Meintest du FROM?»). |
 | `ambiguous column name: X` | Die Spalte «X» kommt in mehreren Tabellen vor. | Schreibe den Tabellennamen davor, z. B. `album.titel`. |
 | `incomplete input` | Die Anweisung ist unvollständig. | Fehlt eine Klammer `)` oder ein Anführungszeichen? |
-| `unrecognized token: "X"` | Unbekanntes Zeichen bei «X». | Meist ein nicht geschlossenes Anführungszeichen. |
+| `unrecognized token: "X"` | Unbekanntes Zeichen bei «X». | Meist ein nicht geschlossenes Anführungszeichen. Falls X ein typografisches Zeichen (’ “ ” —) ist: SQL braucht gerade Anführungszeichen `'` und zwei Bindestriche `--`; das passiert oft beim Tippen auf dem Tablet. |
 | `UNIQUE constraint failed: T.C` (auch PRIMARY KEY, zusammengesetzt) | Der Wert in «T.C» ist schon vorhanden. | Diese Spalte muss eindeutig sein. Anderen Wert wählen oder id weglassen, SQLite vergibt sie automatisch. |
 | `NOT NULL constraint failed: T.C` | Die Spalte «T.C» darf nicht leer (NULL) sein. | Wert angeben; Reihenfolge der Werte prüfen. |
 | `FOREIGN KEY constraint failed` | Die Verweise zwischen den Tabellen würden ungültig. | Beim DELETE: Es gibt noch Zeilen, die auf diese Zeile verweisen (z. B. Songs auf ein Album). Beim INSERT/UPDATE: Die angegebene id existiert in der verwiesenen Tabelle nicht. |
@@ -207,12 +241,16 @@ src/
     musik_streaming.sql generiert (?raw)
   store/                zustand: dbStore, resultStore, scratchbookStore, uiStore
   components/           Toolbar, Editor (CodeMirror), Results (ResultTable, MessageLine, ErrorBox),
-                        SidePanel (TableList, ScratchbookList), TableView, DdlView, Tabs,
-                        dialogs (NewDatabaseDialog, ConfirmDialog, HelpDialog)
+                        SidePanel (TableList, ScratchbookList, Drawer), TableView, DdlView, Tabs,
+                        SplitPane (Pointer Events), dialogs (NewDatabaseDialog, ConfirmDialog, HelpDialog)
+  editor/               cmSetup.ts (SQLite-Dialekt, Autocomplete), smartPunctuation.ts (Transaktionsfilter)
+  files/                download.ts (Blob + <a download>), openFile.ts (<input type=file>)
+  hooks/                useMediaQuery, useBreakpoint
   i18n/de.ts            alle UI-Texte an einem Ort
   styles/               tokens.css (Farbvariablen), global.css
 scripts/generate-seed.ts
-.github/workflows/deploy.yml
+e2e/smoke.spec.ts        Playwright, Projekte chromium / firefox / webkit / iPad
+.github/workflows/deploy.yml   Build, Vitest, Playwright-Smoke, Deploy
 ```
 
 State: **zustand** (klein, erlaubt Updates aus Nicht-React-Code wie Autosave und `recover()`; Selektoren verhindern Re-Renders des CodeMirror-Wrappers). Regel: Komponenten importieren nie sql.js, sondern rufen Store-Aktionen; Aktionen rufen `engine`/`persistence`.
@@ -221,24 +259,28 @@ Startsequenz (`dbStore.init()`): `openDb()` -> `reconcileSeeds()` -> `settings.a
 
 ## Umsetzungsschritte
 
-1. **Projekt aufsetzen**: `npm create vite@latest` (react-ts), ESLint/Prettier, Vitest mit `fake-indexeddb/auto`, `base: '/dmdb_app/'`, GitHub-Action für Pages, README (Entwicklung, Seed neu generieren, Deployment). `.gitignore` inkl. `node_modules`, `dist`; `assets/` bleibt untracked-Symlink (nicht ins Build einbeziehen).
+1. **Projekt aufsetzen**: `npm create vite@latest` (react-ts), ESLint/Prettier, Vitest mit `fake-indexeddb/auto`, `browserslist`, `base: '/dmdb_app/'`, GitHub-Action für Pages, README (Entwicklung, Seed neu generieren, Deployment, Browser-Matrix). `.gitignore` inkl. `node_modules`, `dist`; `assets/` bleibt untracked-Symlink (nicht ins Build einbeziehen).
 2. **Seed**: `scripts/generate-seed.ts` schreiben, `musik_streaming.sql` erzeugen, Seed-Test.
 3. **Engine**: `sqljs.ts`, `engine.ts`, `classify.ts`, `runScript.ts`, `schema.ts`, `browse.ts` mit Tests (Multi-Statement, `;` in Strings, Row-Cap, Klassifikation, foreign_keys überlebt snapshot).
 4. **Fehlerübersetzung**: `errors/` mit tabellengetriebenen Tests gegen echte SQLite-Meldungen.
 5. **Persistenz**: `idb.ts`, `databases.ts`, `scratchbooks.ts`, `settings.ts`, `migrate.ts`, Round-Trip- und Versionsabgleich-Tests.
 6. **Stores**: dbStore (init, switch, reset, create, delete), resultStore, scratchbookStore, uiStore.
-7. **UI Grundgerüst**: Design-Tokens (WebTigerPython-Farben, LPU-Teal als Akzent), Toolbar, Seitenleiste, Tabs, Splitter (eigene kleine Komponente oder `react-resizable-panels`).
-8. **Editor + Ausgabe**: CodeMirror-Wrapper (SQLite-Dialekt, Schema-Autocomplete, Ctrl/Cmd+Enter), Selektion ausführen, ResultTable (Zeilenzahl, Truncation-Hinweis, NULL-Darstellung), MessageLine, ErrorBox (deutsch, Ursache, Original einklappbar, fehlerhaftes Statement im Editor markieren).
+7. **UI Grundgerüst**: Design-Tokens (WebTigerPython-Farben, LPU-Teal als Akzent, 44-px-Trefferflächen, `100dvh`), Toolbar, Seitenleiste mit Drawer-Modus unter 1024 px, Tabs, SplitPane mit Pointer Events und Tap-Maximieren.
+8. **Editor + Ausgabe**: CodeMirror-Wrapper (SQLite-Dialekt, Schema-Autocomplete, Autokorrektur aus, Smart-Punctuation-Filter, Ctrl/Cmd+Enter), grosser «Ausführen»-Button, Selektion ausführen, ResultTable (Zeilenzahl, Truncation-Hinweis, NULL-Darstellung, sticky Kopf, Scroll im Container), MessageLine, ErrorBox (deutsch, Ursache, Original einklappbar, fehlerhaftes Statement im Editor markieren).
 9. **Tabellenansicht**: Daten (Sortieren per Kopf, Suchfeld, «Mehr laden», PK-Marker), DDL-Ansicht, Refresh bei Tab-Aktivierung.
-10. **Scratch-Books**: Liste, neu/umbenennen/löschen, Autosave, Tab-Integration; Ad-hoc-SQL-Tab ebenfalls persistieren.
-11. **Datenbanken verwalten**: DB-Auswahl, Dialog «Neue Datenbank» aus DDL, Löschen eigener DBs, Zurücksetzen mit Bestätigung, Badge bei veraltetem Seed.
+10. **Scratch-Books**: Liste, «⋯»-Menü (umbenennen, herunterladen, löschen), neu, `.sql` öffnen, Autosave, Tab-Integration; Ad-hoc-SQL-Tab ebenfalls persistieren.
+11. **Datenbanken verwalten**: DB-Auswahl, Dialog «Neue Datenbank» aus DDL, `.sqlite` importieren/herunterladen, Löschen eigener DBs, Zurücksetzen mit Bestätigung, Badge bei veraltetem Seed, einmaliger Hinweis zur lokalen Speicherung.
 12. **Hilfe**: kurzer SQL-Spickzettel (Klauseln und Operatoren der Lernziele mit je einem Minimalbeispiel) als Dialog; deckt zugleich das TODO in `anhang/sql-uebersicht.tex` der LPU inhaltlich ab.
-13. **Feinschliff**: Tastaturbedienung, Fokus, Ladezustände, leere Zustände, Texte auf Schweizer Rechtschreibung prüfen, Lighthouse-Check, Deployment testen.
+13. **E2E und Browser-Matrix**: Playwright-Smoke-Test für chromium, firefox, webkit und iPad-Viewport in der CI; manueller Durchgang auf echtem iPad.
+14. **Feinschliff**: Tastaturbedienung, Fokus, Ladezustände, leere Zustände, Texte auf Schweizer Rechtschreibung prüfen, Lighthouse-Check (auch Accessibility), Deployment testen.
 
 ## Verifikation
 
 - `npm test`: Seed-Test (FK-Check leer, Mengen im Zielbereich, Positionen lückenlos, ISO-Daten), Engine-Tests, Fehlerübersetzungs-Tests, Persistenz-Round-Trip mit fake-indexeddb, Seed-Versionsmatrix.
 - `npm run build && npm run preview` mit Base-Pfad: wasm lädt unter `/dmdb_app/assets/…`.
+- `npx playwright test`: Smoke-Test in Chromium, Firefox, WebKit und mit iPad-Viewport (Touch): App lädt, Tabelle öffnen, Query ausführen, Reload behält DB-Stand und Scratch-Book, Drawer öffnet/schliesst.
+- Manuell auf echtem iPad (Safari): `'Rock'` tippen ergibt gerade Anführungszeichen im Editor, `--` bleibt ein Kommentar, virtuelle Tastatur verdeckt den «Ausführen»-Button nicht, Splitter lässt sich mit dem Finger ziehen, Sortieren per Tipp auf Spaltenkopf, Download und Import einer `.sqlite`-Datei funktionieren über die Dateien-App.
+- Manuell in Firefox und Edge auf dem Desktop: Fokusreihenfolge, Autocomplete, Download/Import.
 - Manueller Durchlauf entlang der LPU-Kapitel im Browser:
   - K3: Tabelle `song` per Klick öffnen, sortieren, suchen; `SELECT titel FROM song ORDER BY dauer_sek DESC;` liefert Tabelle mit Zeilenzahl.
   - K4: `WHERE … LIKE '%Nacht%'`, `IN (…)`, Datumsvergleich auf `registriert_am`.

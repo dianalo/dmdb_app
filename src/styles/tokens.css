@@ -1,0 +1,50 @@
+/*
+ * Design-Tokens, abgeleitet von WebTigerPython (siehe docs/PLAN.md,
+ * Abschnitt «Design-Referenz WebTigerPython»), mit dem LPU-Teal als Akzent.
+ *
+ * v1 hat nur ein helles Theme. Ein dunkles Theme kommt später als
+ * zusätzlicher Block (z. B. `:root[data-theme='dark']`), ohne dass
+ * andere Stylesheets angefasst werden müssen.
+ */
+:root {
+  color-scheme: light;
+
+  /* Flächen und Text */
+  --color-bg: #ffffff;
+  --color-surface: #fdffff;
+  --color-toolbar: #d4d4d4;
+  --color-on-toolbar: #000000;
+  --color-title: #333333;
+  --color-text: #1f2933;
+  --color-muted: #6b7280;
+  --color-border: #d4d4d4;
+
+  /* Akzent: LPU-Teal (aktiver Tab, Ausführen-Button, Links) */
+  --color-accent: #1f7a8c;
+
+  /* Editor */
+  --color-gutter: #ffddaa;
+  --color-line-focus: #e2f2ff;
+
+  /* Status: jede Farbe hat genau eine Bedeutung */
+  --color-error: #b00020;
+  --color-info: #2196f3;
+  --color-success: #4caf50;
+  --color-warning: #fb8c00;
+
+  /* Code */
+  --color-code-bg: #f3f4f6;
+  --syntax-keyword: #0033aa;
+  --syntax-string: #cc6600;
+  --syntax-number: #cc3300;
+  --syntax-comment: #008000;
+
+  /* Typografie */
+  --font-sans: 'Fira Sans', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'Fira Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  /* Masse */
+  --touch-target: 44px;
+  --radius: 4px;
+  --splitter-size: 6px;
+}

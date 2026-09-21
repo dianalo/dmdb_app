@@ -1,0 +1,22 @@
+# Abhängigkeiten und Build-Artefakte
+node_modules
+dist
+dist-ssr
+coverage
+
+# Test-Artefakte (Playwright, Phase E)
+playwright-report
+test-results
+
+# Lokales
+*.local
+.DS_Store
+
+# Editoren
+.vscode/*
+!.vscode/extensions.json
+.idea
+
+# Logs
+*.log
+npm-debug.log*

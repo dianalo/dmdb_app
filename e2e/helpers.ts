@@ -29,15 +29,25 @@ export async function waitForReady(page: Page): Promise<void> {
 /**
  * Markiert den ganzen Inhalt eines fokussierten CodeMirror-Editors.
  *
- * CodeMirror wählt die Tastenbelegung nach dem Browser, nicht nach dem Host-OS: In
- * WebKit (navigator.vendor «Apple…») gilt die Apple-Belegung, dort ist Ctrl+A
- * «Zeilenanfang» und Alles-Markieren liegt auf Cmd+A. `ControlOrMeta` richtet sich
- * dagegen nach dem Host (Linux in der CI) und träfe die falsche Taste.
+ * CodeMirror wählt die Tastenbelegung nach dem Browser, nicht nach dem Host-OS.
+ * Die Apple-Belegung (Alles-Markieren auf Cmd+A, Ctrl+A ist «Zeilenanfang») gilt,
+ * wenn `navigator.platform` «Mac» enthält oder der Browser iOS-Safari ist (Vendor
+ * «Apple Computer» und Mobile-UA oder Touch). Die Erkennung hier bildet
+ * `@codemirror/view` nach. `ControlOrMeta` richtet sich dagegen nach dem Host
+ * (Linux in der CI) und träfe im iPad-Profil die falsche Taste.
  */
 export async function selectAllInEditor(page: Page): Promise<void> {
   const apple = await page.evaluate(() => {
-    const nav = globalThis.navigator as { vendor?: string; platform?: string };
-    return /Apple/.test(nav.vendor ?? '') || /Mac|iPhone|iPad/.test(nav.platform ?? '');
+    const nav = globalThis.navigator as {
+      vendor?: string;
+      platform?: string;
+      userAgent?: string;
+      maxTouchPoints?: number;
+    };
+    const safari = /Apple Computer/.test(nav.vendor ?? '');
+    const ios =
+      safari && (/Mobile\/\w+/.test(nav.userAgent ?? '') || (nav.maxTouchPoints ?? 0) > 2);
+    return ios || /Mac/.test(nav.platform ?? '');
   });
   await page.keyboard.press(apple ? 'Meta+A' : 'Control+A');
 }

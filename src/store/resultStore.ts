@@ -4,6 +4,7 @@
 import { create } from 'zustand';
 import { SqlError, translateThrown, type StatementResult, type TranslatedError } from '@/db';
 import { useDbStore } from './dbStore';
+import { useUiStore } from './uiStore';
 
 export interface TabResults {
   running: boolean;
@@ -70,6 +71,27 @@ export const useResultStore = create<ResultState>()((set, get) => {
       });
     },
   };
+});
+
+// Geschlossene Tabs vergessen ihre Resultate (bis zu 1000 Zeilen pro Statement),
+// sonst wächst der Speicher mit jedem geöffneten und wieder geschlossenen Tab.
+// Ein Lauf, der erst nach dem Schliessen fertig wird, landet hier ebenfalls.
+function dropClosedTabs(): void {
+  const open = new Set(useUiStore.getState().tabs.map((tab) => tab.id));
+  const { byTab } = useResultStore.getState();
+  const stale = Object.keys(byTab).filter((id) => !open.has(id) && !byTab[id]?.running);
+  if (stale.length === 0) return;
+  const next = { ...byTab };
+  for (const id of stale) delete next[id];
+  useResultStore.setState({ byTab: next });
+}
+
+useUiStore.subscribe((state, previous) => {
+  if (state.tabs !== previous.tabs) dropClosedTabs();
+});
+
+useResultStore.subscribe((state, previous) => {
+  if (state.byTab !== previous.byTab) dropClosedTabs();
 });
 
 /** Leerer Zustand für Tabs ohne Lauf (stabile Referenz für Selektoren). */

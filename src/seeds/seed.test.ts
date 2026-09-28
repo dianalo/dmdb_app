@@ -47,10 +47,10 @@ describe('Seed «Musik-Streaming»', () => {
     expect(sql.trimEnd().endsWith('COMMIT;')).toBe(true);
   });
 
-  it('wird von der Registry als Version 1 angeboten', () => {
+  it('wird von der Registry als Version 1 angeboten', async () => {
     expect(musikStreaming.id).toBe('musik-streaming');
     expect(musikStreaming.version).toBe(1);
-    expect(musikStreaming.sql).toBe(sql);
+    expect(await musikStreaming.loadSql()).toBe(sql);
     expect(builtinSeeds).toEqual([musikStreaming]);
     expect(builtinDbId(musikStreaming)).toBe(`${BUILTIN_DB_ID_PREFIX}musik-streaming`);
   });

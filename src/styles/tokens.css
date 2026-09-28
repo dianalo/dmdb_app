@@ -16,7 +16,7 @@
   --color-on-toolbar: #000000;
   --color-title: #333333;
   --color-text: #1f2933;
-  --color-muted: #6b7280;
+  --color-muted: #5f6672; /* ≥ 4.5:1 auch auf den getönten Flächen (#f0f0f0, Fehlerblock) */
   --color-border: #d4d4d4;
 
   /* Akzent: LPU-Teal (aktiver Tab, Ausführen-Button, Links) */

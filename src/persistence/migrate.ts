@@ -50,7 +50,7 @@ export async function reconcileSeeds(
 
     // Kein Eintrag: aus dem Seed aufbauen.
     if (!meta) {
-      const bytes = await builder.buildFromSql(seed.sql);
+      const bytes = await builder.buildFromSql(await seed.loadSql());
       await saveDatabase(freshBuiltinMeta(seed, id, nowIso()), bytes);
       result.created.push(id);
       continue;
@@ -63,7 +63,10 @@ export async function reconcileSeeds(
     if (storedVersion >= seed.version) {
       const bytes = await loadDatabaseBytes(id);
       if (!bytes) {
-        await saveDatabase(freshBuiltinMeta(seed, id, meta.createdAt), await builder.buildFromSql(seed.sql));
+        await saveDatabase(
+          freshBuiltinMeta(seed, id, meta.createdAt),
+          await builder.buildFromSql(await seed.loadSql()),
+        );
         result.rebuilt.push(id);
       }
       continue;
@@ -71,7 +74,7 @@ export async function reconcileSeeds(
 
     // Ältere Version und unverändert: stillschweigend neu aufbauen.
     if (!meta.modified) {
-      const bytes = await builder.buildFromSql(seed.sql);
+      const bytes = await builder.buildFromSql(await seed.loadSql());
       await saveDatabase(freshBuiltinMeta(seed, id, meta.createdAt), bytes);
       result.rebuilt.push(id);
       continue;
@@ -93,7 +96,7 @@ export async function reconcileSeeds(
  */
 export async function resetBuiltin(seed: Seed, builder: SeedBuilder, id: string): Promise<DbMeta> {
   const existing = await getDatabaseMeta(id);
-  const bytes = await builder.buildFromSql(seed.sql);
+  const bytes = await builder.buildFromSql(await seed.loadSql());
   return saveDatabase(freshBuiltinMeta(seed, id, existing?.createdAt ?? nowIso()), bytes);
 }
 

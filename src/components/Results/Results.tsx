@@ -2,7 +2,7 @@ import { mdiCheckCircleOutline } from '@mdi/js';
 import type { StatementResult } from '@/db';
 import { Icon } from '@/components/Shell/Icon';
 import { de } from '@/i18n/de';
-import { EMPTY_TAB_RESULTS, useResultStore } from '@/store/resultStore';
+import { EMPTY_TAB_RESULTS, useResultStore, type TabResults } from '@/store/resultStore';
 import { ErrorBox } from './ErrorBox';
 import { ResultTable } from './ResultTable';
 import { summaryText } from './resultText';
@@ -12,6 +12,18 @@ interface ResultsProps {
   tabId: string;
   /** Markiert den Bereich eines Statements im Editor. */
   onShowRange?: (range: [number, number]) => void;
+}
+
+/**
+ * Kurzer Status für Screenreader («Läuft…», «300 Zeilen»). Fehler brauchen das nicht,
+ * der Fehlerblock ist selbst `role="alert"`.
+ */
+function announcement(tab: TabResults): string {
+  if (tab.running) return de.editor.running;
+  if (tab.ranAt === undefined) return '';
+  const last = tab.results.at(-1);
+  if (!last) return de.results.noStatements;
+  return last.kind === 'error' ? '' : summaryText(last);
 }
 
 /** Ausgabe eines Editor-Tabs: pro Statement ein Block. */
@@ -28,6 +40,9 @@ export function Results({ tabId, onShowRange }: ResultsProps) {
       aria-busy={tab.running}
       data-single={single || undefined}
     >
+      <p className={styles.srOnly} role="status">
+        {announcement(tab)}
+      </p>
       {tab.persistError && (
         <ErrorBox
           error={{

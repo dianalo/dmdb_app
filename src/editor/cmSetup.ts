@@ -129,10 +129,6 @@ export function markRange(view: EditorView, from: number, to: number): void {
   });
 }
 
-export function clearMark(view: EditorView): void {
-  view.dispatch({ effects: setErrorMark.of(null) });
-}
-
 /* ---------- Ausführen ---------- */
 
 /** Was ausgeführt wird: die Selektion, falls vorhanden, sonst der ganze Inhalt. */

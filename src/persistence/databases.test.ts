@@ -79,7 +79,9 @@ describe('persistence/databases', () => {
   });
 
   it('wirft beim Patchen einer unbekannten Datenbank', async () => {
-    await expect(updateDatabaseMeta('gibt-es-nicht', { name: 'x' })).rejects.toThrow(/gibt-es-nicht/);
+    await expect(updateDatabaseMeta('gibt-es-nicht', { name: 'x' })).rejects.toThrow(
+      /gibt-es-nicht/,
+    );
   });
 
   it('löscht eigene Datenbanken samt Bytes', async () => {

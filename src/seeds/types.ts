@@ -1,6 +1,9 @@
 /**
  * Vertrag der Seed-Registry (`src/seeds/index.ts`).
- * Das SQL wird per `?raw`-Import aus der eingecheckten `.sql`-Datei geladen.
+ *
+ * `id`, `name` und `version` sind statisch, damit der Versionsabgleich beim Start
+ * ohne das SQL auskommt. Das SQL selbst (einige hundert KB) wird erst geladen, wenn
+ * eine Beispieldatenbank tatsächlich (neu) aufgebaut werden muss.
  */
 export interface Seed {
   /** Stabiler Slug, z. B. `musik-streaming`. */
@@ -9,6 +12,6 @@ export interface Seed {
   name: string;
   /** Wird bei inhaltlichen Änderungen erhöht; steuert den Seed-Versionsabgleich. */
   version: number;
-  /** Vollständiges SQL-Script (DDL + INSERTs). */
-  sql: string;
+  /** Lädt das vollständige SQL-Script (DDL + INSERTs), z. B. per dynamischem `?raw`-Import. */
+  loadSql(): Promise<string>;
 }

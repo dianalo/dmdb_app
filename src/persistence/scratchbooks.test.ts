@@ -44,7 +44,9 @@ describe('persistence/scratchbooks', () => {
   });
 
   it('wirft beim Ändern eines unbekannten Scratch-Books', async () => {
-    await expect(updateScratchbook('gibt-es-nicht', { content: '' })).rejects.toThrow(/gibt-es-nicht/);
+    await expect(updateScratchbook('gibt-es-nicht', { content: '' })).rejects.toThrow(
+      /gibt-es-nicht/,
+    );
   });
 
   it('löscht ein Scratch-Book', async () => {

@@ -3,7 +3,6 @@ import { de } from '@/i18n/de';
 import { MAX_SPLIT_RATIO, MIN_SPLIT_RATIO, clampRatio } from '@/store/uiStore';
 import styles from './SplitPane.module.css';
 
-const DOUBLE_TAP_MS = 400;
 const DRAG_THRESHOLD_PX = 4;
 const KEY_STEP = 0.05;
 
@@ -26,8 +25,9 @@ interface DragState {
 
 /**
  * Horizontal geteilter Bereich (oben/unten) mit Griff.
- * Pointer Events funktionieren mit Maus, Finger und Stift; ein doppelter Tipp
- * auf den Griff maximiert die Ausgabe, weil präzises Ziehen auf Touch mühsam ist.
+ * Pointer Events funktionieren mit Maus, Finger und Stift; ein Tipp (ohne Ziehen)
+ * auf den Griff maximiert die Ausgabe bzw. stellt sie zurück, weil präzises Ziehen
+ * auf Touch mühsam ist. Bewusst kein Doppeltipp: der wäre schwer zu entdecken.
  */
 export function SplitPane({
   ratio,
@@ -39,7 +39,6 @@ export function SplitPane({
 }: SplitPaneProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const drag = useRef<DragState | null>(null);
-  const lastTap = useRef(0);
   // Während des Ziehens nur lokal rendern, erst beim Loslassen in den Store schreiben.
   const [liveRatio, setLiveRatio] = useState<number | null>(null);
 
@@ -75,17 +74,9 @@ export function SplitPane({
     if (state.moved) {
       if (!cancelled) onRatioChange(ratioAt(event.clientY));
       setLiveRatio(null);
-      lastTap.current = 0;
       return;
     }
-    if (cancelled) return;
-    const now = performance.now();
-    if (now - lastTap.current < DOUBLE_TAP_MS) {
-      lastTap.current = 0;
-      onToggleMaximized();
-    } else {
-      lastTap.current = now;
-    }
+    if (!cancelled) onToggleMaximized();
   };
 
   const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {

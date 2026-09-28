@@ -1,6 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { loadTestSqlJs } from '@/db/testUtils';
-import { getDatabaseMeta, getSettings, resetConnectionForTests, setSetting } from '@/persistence';
+import {
+  createUserDatabase,
+  getDatabaseMeta,
+  getSettings,
+  resetConnectionForTests,
+  setSetting,
+} from '@/persistence';
 import { resetDmdbForTests } from '@/persistence/testSupport';
 import { hydrateApp } from '@/app/bootstrap';
 import { resetDbStoreForTests, useDbStore } from './dbStore';
@@ -96,6 +102,21 @@ describe('stores', () => {
       expect((await getDatabaseMeta(BUILTIN))?.modified).toBe(false);
     });
 
+    it('ein geschlossener Tab vergisst seine Resultate', async () => {
+      await useDbStore.getState().init();
+      useUiStore.getState().openTable('song');
+      const tabId = tableTabId('song');
+      await useResultStore.getState().run(tabId, 'SELECT 1;');
+      expect(useResultStore.getState().byTab[tabId]?.results).toHaveLength(1);
+
+      useUiStore.getState().closeTab(tabId);
+      expect(useResultStore.getState().byTab[tabId]).toBeUndefined();
+
+      // Ein Lauf, der erst nach dem Schliessen fertig wird, bleibt auch nicht liegen.
+      await useResultStore.getState().run('sb:weg', 'SELECT 1;');
+      expect(useResultStore.getState().byTab['sb:weg']).toBeUndefined();
+    });
+
     it('DDL aktualisiert die Tabellenliste', async () => {
       await useDbStore.getState().init();
       await useDbStore
@@ -188,6 +209,14 @@ describe('stores', () => {
       await setSetting('activeDbId', 'gibt-es-nicht');
       await useDbStore.getState().init();
       expect(useDbStore.getState().activeDbId).toBe(BUILTIN);
+    });
+
+    it('ein gescheiterter Wechsel lässt die bisherige Datenbank offen', async () => {
+      await useDbStore.getState().init();
+      const broken = await createUserDatabase('kaputt', new TextEncoder().encode('kein SQLite'));
+      await expect(useDbStore.getState().switchDatabase(broken.id)).rejects.toThrow();
+      expect(useDbStore.getState().activeDbId).toBe(BUILTIN);
+      expect(await countRows('SELECT COUNT(*) FROM song;')).toBe(300);
     });
   });
 

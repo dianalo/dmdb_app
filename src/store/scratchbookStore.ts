@@ -1,8 +1,8 @@
 /**
  * Scratch-Books: Liste, Inhalte der geöffneten, Autosave.
  *
- * Welche Scratch-Books offen sind, steht in den Tabs (`uiStore`); `activeIds`
- * wird daraus abgeleitet, damit es nur eine Quelle der Wahrheit gibt.
+ * Welche Scratch-Books offen sind, steht allein in den Tabs (`uiStore`),
+ * damit es nur eine Quelle der Wahrheit gibt.
  */
 import { create } from 'zustand';
 import { downloadText } from '@/files/download';
@@ -44,14 +44,6 @@ export interface ScratchbookState {
   flush(): Promise<void>;
   rename(id: string, name: string): Promise<void>;
   remove(id: string): Promise<void>;
-}
-
-/** IDs der Scratch-Books, die in einem Tab offen sind. */
-export function selectOpenScratchbookIds(): string[] {
-  return useUiStore
-    .getState()
-    .tabs.filter((tab) => tab.kind === 'scratchbook' && tab.refId !== undefined)
-    .map((tab) => tab.refId as string);
 }
 
 /** Nächster freier Standardname «Scratch-Book N». */

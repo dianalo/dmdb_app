@@ -139,7 +139,12 @@ function DataTable({ name, view }: { name: string; view: TableViewData }) {
 
   return (
     <div className={styles.dataPane}>
-      <div className={styles.scroll} tabIndex={0} aria-label={de.tableView.tableLabel(name)}>
+      <div
+        className={styles.scroll}
+        tabIndex={0}
+        role="region"
+        aria-label={de.tableView.tableLabel(name)}
+      >
         <table className={`${resultStyles.table} ${styles.table}`}>
           <thead>
             <tr>

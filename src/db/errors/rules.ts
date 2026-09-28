@@ -48,6 +48,10 @@ const COMMA_TOKENS = new Set(['FROM', 'WHERE', 'ORDER', 'GROUP', 'HAVING', 'LIMI
 
 const q = (value: string): string => `«${value}»`;
 
+/** «1 Spalte» bzw. «3 Spalten», «1 Wert» bzw. «2 Werte». */
+const spalten = (n: string): string => `${n} ${n === '1' ? 'Spalte' : 'Spalten'}`;
+const werte = (n: string): string => `${n} ${n === '1' ? 'Wert' : 'Werte'}`;
+
 function hasTypographic(text: string): boolean {
   TYPOGRAPHIC_RE.lastIndex = 0;
   return TYPOGRAPHIC_RE.test(text);
@@ -240,7 +244,7 @@ export const RULES: readonly Rule[] = [
     name: 'column-count-mismatch',
     pattern: /table\s+(\S+)\s+has\s+(\d+)\s+columns but\s+(\d+)\s+values were supplied/i,
     build: (m) => ({
-      title: `Die Tabelle ${q(m[1] as string)} hat ${m[2]} Spalten, du hast ${m[3]} Werte angegeben.`,
+      title: `Die Tabelle ${q(m[1] as string)} hat ${spalten(m[2] as string)}, du hast ${werte(m[3] as string)} angegeben.`,
       hint: 'Zähle die Werte nach oder gib die Spalten an: INSERT INTO t (a, b) VALUES (…);',
     }),
   },
@@ -248,7 +252,7 @@ export const RULES: readonly Rule[] = [
     name: 'values-for-columns',
     pattern: /(\d+)\s+values for\s+(\d+)\s+columns/i,
     build: (m) => ({
-      title: `Du hast ${m[1]} Werte für ${m[2]} Spalten angegeben.`,
+      title: `Du hast ${werte(m[1] as string)} für ${spalten(m[2] as string)} angegeben.`,
       hint: 'Die Anzahl der Werte muss zur Spaltenliste passen.',
     }),
   },

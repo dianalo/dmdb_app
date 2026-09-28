@@ -158,7 +158,8 @@
 
 .pk {
   display: inline-flex;
-  color: var(--color-warning);
+  /* Abgedunkelt: reines Orange hätte auf dem Tabellenkopf nur 2.4:1 Kontrast. */
+  color: color-mix(in srgb, var(--color-warning) 70%, #000000);
 }
 
 /* Platz für den Pfeil reservieren, damit die Spalte beim Sortieren nicht springt. */

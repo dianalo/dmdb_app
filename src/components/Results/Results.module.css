@@ -234,3 +234,13 @@
     background: color-mix(in srgb, var(--color-accent) 10%, transparent);
   }
 }
+
+/* Nur für Screenreader sichtbar (Live-Region mit dem Status des Laufs). */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

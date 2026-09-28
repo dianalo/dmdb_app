@@ -5,14 +5,17 @@ import { resetDmdbForTests } from './testSupport';
 import type { DbMeta, SeedBuilder } from './types';
 import type { Seed } from '../seeds/types';
 
+const SQL_V1 = 'CREATE TABLE song(id INTEGER PRIMARY KEY); -- v1';
+const SQL_V2 = 'CREATE TABLE song(id INTEGER PRIMARY KEY); -- v2';
+
 const seedV1: Seed = {
   id: 'musik-streaming',
   name: 'Musik-Streaming',
   version: 1,
-  sql: 'CREATE TABLE song(id INTEGER PRIMARY KEY); -- v1',
+  loadSql: () => Promise.resolve(SQL_V1),
 };
 
-const seedV2: Seed = { ...seedV1, version: 2, sql: 'CREATE TABLE song(id INTEGER PRIMARY KEY); -- v2' };
+const seedV2: Seed = { ...seedV1, version: 2, loadSql: () => Promise.resolve(SQL_V2) };
 
 /** Attrappe der Engine: das «SQLite-File» ist schlicht das SQL als UTF-8. */
 function fakeBuilder(): SeedBuilder & { buildFromSql: ReturnType<typeof vi.fn> } {
@@ -54,7 +57,7 @@ describe('persistence/migrate: reconcileSeeds', () => {
     const result = await reconcileSeeds([seedV1], builder, idFor);
 
     expect(result).toEqual({ created: [ID], rebuilt: [], outdated: [] });
-    expect(builder.buildFromSql).toHaveBeenCalledWith(seedV1.sql);
+    expect(builder.buildFromSql).toHaveBeenCalledWith(SQL_V1);
 
     const meta = await getDatabaseMeta(ID);
     expect(meta).toMatchObject({
@@ -66,17 +69,21 @@ describe('persistence/migrate: reconcileSeeds', () => {
       modified: false,
       seedOutdated: false,
     });
-    expect(decode(await loadDatabaseBytes(ID))).toBe(seedV1.sql);
+    expect(decode(await loadDatabaseBytes(ID))).toBe(SQL_V1);
   });
 
   it('gleiche Version: tut nichts', async () => {
     await storeBuiltin({}, 'STAND DER SUS');
     const builder = fakeBuilder();
 
-    const result = await reconcileSeeds([seedV1], builder, idFor);
+    const loadSql = vi.fn(seedV1.loadSql);
+
+    const result = await reconcileSeeds([{ ...seedV1, loadSql }], builder, idFor);
 
     expect(result).toEqual({ created: [], rebuilt: [], outdated: [] });
     expect(builder.buildFromSql).not.toHaveBeenCalled();
+    // Der Versionsabgleich kommt ohne das (grosse) Seed-SQL aus.
+    expect(loadSql).not.toHaveBeenCalled();
     expect(decode(await loadDatabaseBytes(ID))).toBe('STAND DER SUS');
   });
 
@@ -87,7 +94,7 @@ describe('persistence/migrate: reconcileSeeds', () => {
     const result = await reconcileSeeds([seedV2], builder, idFor);
 
     expect(result).toEqual({ created: [], rebuilt: [ID], outdated: [] });
-    expect(decode(await loadDatabaseBytes(ID))).toBe(seedV2.sql);
+    expect(decode(await loadDatabaseBytes(ID))).toBe(SQL_V2);
 
     const meta = await getDatabaseMeta(ID);
     expect(meta?.seedVersion).toBe(2);
@@ -123,11 +130,16 @@ describe('persistence/migrate: reconcileSeeds', () => {
     const result = await reconcileSeeds([seedV1], builder, idFor);
 
     expect(result.rebuilt).toEqual([ID]);
-    expect(decode(await loadDatabaseBytes(ID))).toBe(seedV1.sql);
+    expect(decode(await loadDatabaseBytes(ID))).toBe(SQL_V1);
   });
 
   it('verarbeitet mehrere Seeds in einem Durchgang', async () => {
-    const other: Seed = { id: 'bibliothek', name: 'Bibliothek', version: 1, sql: '-- bibliothek' };
+    const other: Seed = {
+      id: 'bibliothek',
+      name: 'Bibliothek',
+      version: 1,
+      loadSql: () => Promise.resolve('-- bibliothek'),
+    };
     const result = await reconcileSeeds([seedV1, other], fakeBuilder(), idFor);
 
     expect(result.created).toEqual([ID, 'builtin:bibliothek']);
@@ -148,14 +160,14 @@ describe('persistence/migrate: resetBuiltin und markModified', () => {
     expect(meta.seedOutdated).toBe(false);
     expect(meta.seedVersion).toBe(2);
     expect(meta.createdAt).toBe('2026-01-01T00:00:00.000Z');
-    expect(decode(await loadDatabaseBytes(ID))).toBe(seedV2.sql);
+    expect(decode(await loadDatabaseBytes(ID))).toBe(SQL_V2);
   });
 
   it('resetBuiltin funktioniert auch, wenn es die Datenbank noch nicht gibt', async () => {
     const meta = await resetBuiltin(seedV1, fakeBuilder(), ID);
 
     expect(meta.kind).toBe('builtin');
-    expect(decode(await loadDatabaseBytes(ID))).toBe(seedV1.sql);
+    expect(decode(await loadDatabaseBytes(ID))).toBe(SQL_V1);
   });
 
   it('markModified setzt das Flag', async () => {

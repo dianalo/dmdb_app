@@ -1,5 +1,4 @@
 import type { Seed } from './types';
-import seedSql from './musik_streaming.sql?raw';
 
 /** Präfix der IDs vordefinierter Datenbanken in IndexedDB. */
 export const BUILTIN_DB_ID_PREFIX = 'builtin:';
@@ -20,7 +19,8 @@ export const musikStreaming: Seed = {
   id: 'musik-streaming',
   name: 'Musik-Streaming',
   version: 1,
-  sql: seedSql,
+  // Eigener Chunk: wird nur geladen, wenn die Datenbank (neu) aufgebaut wird.
+  loadSql: () => import('./musik_streaming.sql?raw').then((module) => module.default),
 };
 
 /** Alle mitgelieferten Seeds. */

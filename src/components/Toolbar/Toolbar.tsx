@@ -75,6 +75,15 @@ export function Toolbar({ showSidebarToggle }: { showSidebarToggle: boolean }) {
     }
   };
 
+  const changeDatabase = async (id: string) => {
+    try {
+      await switchDatabase(id);
+    } catch (error) {
+      // Die bisherige Datenbank bleibt aktiv; das Dropdown folgt `activeDbId`.
+      setDialog({ kind: 'message', title: de.dialogs.actionFailed, text: messageOf(error) });
+    }
+  };
+
   const downloadDatabase = async () => {
     try {
       await useDbStore.getState().downloadActive();
@@ -129,7 +138,7 @@ export function Toolbar({ showSidebarToggle }: { showSidebarToggle: boolean }) {
             id={selectId}
             className={styles.select}
             value={activeDbId ?? ''}
-            onChange={(event) => void switchDatabase(event.target.value)}
+            onChange={(event) => void changeDatabase(event.target.value)}
           >
             {databases.map((db) => (
               <option key={db.id} value={db.id}>

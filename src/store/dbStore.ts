@@ -36,7 +36,7 @@ import { nameFromFilename, uniqueName } from './names';
 
 export type DbStatus = 'idle' | 'loading' | 'ready' | 'error';
 
-/** Ergebnis von `persistIfDirty`: `error` ist gesetzt, wenn das Speichern scheiterte. */
+/** Ergebnis des Speicherns nach einem Lauf: `error` ist gesetzt, wenn es scheiterte. */
 export interface PersistResult {
   saved: boolean;
   error?: TranslatedError;
@@ -55,10 +55,8 @@ export interface DbState {
 
   init(): Promise<void>;
   switchDatabase(id: string): Promise<void>;
-  refreshSchema(): Promise<void>;
   /** Führt ein Script aus, speichert bei Bedarf und aktualisiert nach DDL das Schema. */
   execute(sql: string, offset?: number): Promise<RunOutcome & { persist: PersistResult }>;
-  persistIfDirty(dirty: boolean): Promise<PersistResult>;
   /** Setzt die aktive Beispieldatenbank auf den aktuellen Seed zurück. */
   resetBuiltin(): Promise<void>;
   /** Neue eigene Datenbank aus einem DDL-Script; wirft `SqlError`, dann wird nichts gespeichert. */
@@ -104,8 +102,18 @@ export const useDbStore = create<DbState>()((set, get) => {
     const bytes = await loadDatabaseBytes(id);
     if (!bytes) throw new Error(de.errors.dbNotFound);
     const engine = await getEngine();
-    await engine.open(bytes);
-    const errorContext = await engine.errorContext();
+    const previous = get().activeDbId;
+    let errorContext: ErrorContext;
+    try {
+      await engine.open(bytes);
+      errorContext = await engine.errorContext(); // scheitert bei kaputten Bytes
+    } catch (error) {
+      // Die bisherige Datenbank wieder öffnen, damit Engine und `activeDbId` zusammenpassen.
+      // Ihr Stand ist nach jedem schreibenden Lauf gespeichert, also nichts verloren.
+      const fallback = previous !== null && previous !== id && (await loadDatabaseBytes(previous));
+      if (fallback) await engine.open(fallback);
+      throw error;
+    }
     // In einem Schritt setzen, damit Abonnenten nie eine neue ID mit altem Schema sehen.
     set({ activeDbId: id, tables: errorContext.tables, errorContext });
     await setSetting('activeDbId', id);
@@ -185,10 +193,6 @@ export const useDbStore = create<DbState>()((set, get) => {
       });
     },
 
-    refreshSchema() {
-      return exclusive(loadSchema);
-    },
-
     execute(sql, offset = 0) {
       return exclusive(async () => {
         const engine = await getEngine();
@@ -197,10 +201,6 @@ export const useDbStore = create<DbState>()((set, get) => {
         if (outcome.results.some((result) => result.kind === 'ddl')) await loadSchema();
         return { ...outcome, persist: persistResult };
       });
-    },
-
-    persistIfDirty(dirty) {
-      return exclusive(() => persist(dirty));
     },
 
     resetBuiltin() {

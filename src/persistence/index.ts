@@ -28,4 +28,4 @@ export type { Autosaver, SaveFn, ScratchbookPatch } from './scratchbooks';
 export { clearSettings, getSetting, getSettings, patchSettings, setSetting } from './settings';
 export { markModified, reconcileSeeds, resetBuiltin } from './migrate';
 export type { BuiltinDbId } from './migrate';
-export { estimateUsage, isStoragePersisted, requestPersistentStorage } from './storage';
+export { requestPersistentStorage } from './storage';

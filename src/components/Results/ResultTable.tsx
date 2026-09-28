@@ -1,5 +1,6 @@
 import { memo } from 'react';
 import type { SqlValue } from '@/db';
+import { de } from '@/i18n/de';
 import { ValueCell } from './cells';
 import styles from './Results.module.css';
 
@@ -26,7 +27,8 @@ function numericColumns(columns: string[], rows: SqlValue[][]): boolean[] {
 export const ResultTable = memo(function ResultTable({ columns, rows }: ResultTableProps) {
   const numeric = numericColumns(columns, rows);
   return (
-    <div className={styles.tableScroll} tabIndex={0}>
+    // Fokussierbar, damit sich breite Tabellen auch per Tastatur scrollen lassen.
+    <div className={styles.tableScroll} tabIndex={0} role="region" aria-label={de.results.table}>
       <table className={styles.table}>
         <thead>
           <tr>

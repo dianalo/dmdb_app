@@ -13,6 +13,22 @@ export default defineConfig({
   },
   build: {
     target: 'baseline-widely-available',
+    rolldownOptions: {
+      output: {
+        // Grosse, selten ändernde Bibliotheken in eigene Chunks: kein Chunk über 500 kB,
+        // und nach einem App-Update bleiben sie im Browser-Cache gültig.
+        codeSplitting: {
+          groups: [
+            {
+              name: 'codemirror',
+              test: /node_modules[\\/](@codemirror|@lezer|codemirror|crelt|style-mod|w3c-keyname)[\\/]/,
+            },
+            { name: 'sqljs', test: /node_modules[\\/]sql\.js[\\/]/ },
+            { name: 'vendor', test: /node_modules[\\/]/ },
+          ],
+        },
+      },
+    },
   },
   test: {
     environment: 'node',

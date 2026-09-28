@@ -143,7 +143,17 @@ export function SidePanel({ onNavigate }: { onNavigate?: () => void }) {
                       {
                         id: 'download',
                         label: de.scratchbooks.download,
-                        onSelect: () => void useScratchbookStore.getState().download(item.id),
+                        onSelect: () =>
+                          void useScratchbookStore
+                            .getState()
+                            .download(item.id)
+                            .catch(() =>
+                              setDialog({
+                                kind: 'message',
+                                title: de.dialogs.actionFailed,
+                                text: de.scratchbooks.downloadFailed,
+                              }),
+                            ),
                       },
                       {
                         id: 'delete',

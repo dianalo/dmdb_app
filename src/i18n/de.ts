@@ -33,7 +33,6 @@ export const de = {
     reset: 'Zurücksetzen',
     resetTitle: 'Beispieldatenbank auf den Ausgangszustand zurücksetzen',
     help: 'Hilfe',
-    comingSoon: 'Folgt in einer späteren Version',
     resetOnlyBuiltin: 'Nur Beispieldatenbanken lassen sich zurücksetzen.',
     seedOutdated: 'Neue Version verfügbar',
     seedOutdatedTitle: 'Neue Version der Beispieldatenbank. Zurücksetzen lädt sie.',
@@ -74,14 +73,14 @@ export const de = {
     running: 'Läuft…',
     runShortcut: 'Ctrl/Cmd + Enter',
     editorLabel: (title: string) => `SQL-Editor «${title}»`,
-    loading: 'Wird geladen…',
   },
   splitPane: {
     handleLabel: 'Grösse von Editor und Ausgabe ändern',
-    handleHint: 'Ziehen oder Pfeiltasten; doppelt tippen maximiert die Ausgabe.',
+    handleHint: 'Ziehen oder Pfeiltasten; Tippen maximiert die Ausgabe oder stellt sie zurück.',
   },
   results: {
     label: 'Ausgabe',
+    table: 'Resultattabelle',
     empty: 'Schreibe eine SQL-Abfrage und tippe auf «Ausführen».',
     noStatements: 'Es gab nichts auszuführen. Der Editor enthält keine Anweisung.',
     rows: zeilen,
@@ -189,6 +188,7 @@ export const de = {
     deleteText: (name: string) =>
       `Scratch-Book «${name}» löschen? Das kann nicht rückgängig gemacht werden.`,
     openFailed: 'Die Datei konnte nicht gelesen werden.',
+    downloadFailed: 'Das Scratch-Book konnte nicht heruntergeladen werden.',
     openFailedTitle: 'Öffnen fehlgeschlagen',
   },
   help: {
@@ -319,7 +319,6 @@ export const de = {
   },
   errors: {
     dbNotFound: 'Diese Datenbank gibt es nicht mehr.',
-    builtinNotDeletable: 'Die Beispieldatenbank kann nicht gelöscht werden.',
     importInvalid: 'Die Datei ist keine gültige SQLite-Datenbank.',
     noSeed: 'Für diese Datenbank gibt es keinen Ausgangszustand.',
   },

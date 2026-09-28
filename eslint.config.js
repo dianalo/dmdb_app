@@ -13,6 +13,7 @@ export default tseslint.config([
     'assets',
     'playwright-report',
     'test-results',
+    'playwright/.cache',
   ]),
   {
     files: ['**/*.{ts,tsx}'],
@@ -28,7 +29,13 @@ export default tseslint.config([
     },
   },
   {
-    files: ['vite.config.ts', 'scripts/**/*.ts', 'eslint.config.js'],
+    files: [
+      'vite.config.ts',
+      'playwright.config.ts',
+      'scripts/**/*.ts',
+      'e2e/**/*.ts',
+      'eslint.config.js',
+    ],
     languageOptions: {
       globals: globals.node,
     },

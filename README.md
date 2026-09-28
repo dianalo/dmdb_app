@@ -29,9 +29,28 @@ npm run dev
 | `npm run preview`    | Gebauten Stand lokal servieren (unter dem Base-Pfad `/dmdb_app/`) |
 | `npm test`           | Unit-Tests einmalig (Vitest)                                      |
 | `npm run test:watch` | Unit-Tests im Watch-Modus                                         |
+| `npm run test:e2e`   | E2E-Smoke-Tests (Playwright, alle Browser-Projekte)               |
 | `npm run lint`       | ESLint über das ganze Projekt                                     |
 | `npm run format`     | Prettier schreibt Formatierung                                    |
 | `npm run seed`       | Seed-Script neu generieren (siehe unten)                          |
+
+## Tests
+
+- **Unit-Tests** (Vitest, `src/**/*.test.ts` und `scripts/**/*.test.ts`): `npm test`
+- **E2E-Smoke-Tests** (Playwright, `e2e/`): beim ersten Mal die Browser installieren, danach
+  laufen lassen. Playwright baut die App und startet `vite preview` auf Port 4173 selbst (ein
+  bereits laufender Preview-Server wird lokal wiederverwendet).
+
+```bash
+npx playwright install            # einmalig; unter Linux ggf. mit --with-deps
+npm run test:e2e                  # chromium, firefox, webkit, ipad, ipad-landscape
+npm run test:e2e:chromium         # nur Chromium, schneller
+npx playwright show-report        # HTML-Report des letzten Laufs
+```
+
+Jeder Test startet mit leerem Browser-Speicher (eigene IndexedDB pro Test). Die iPad-Projekte
+emulieren Viewport und Touch in WebKit; Tests nur für Touch (Drawer, Smart Punctuation) werden in
+den Desktop-Projekten übersprungen. In CI laufen die E2E-Tests vor dem Deployment.
 
 ## Seed neu generieren
 

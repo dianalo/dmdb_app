@@ -4,9 +4,10 @@ dist
 dist-ssr
 coverage
 
-# Test-Artefakte (Playwright, Phase E)
-playwright-report
-test-results
+# Test-Artefakte (Playwright)
+playwright-report/
+test-results/
+playwright/.cache/
 
 # Lokales
 *.local

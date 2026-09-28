@@ -27,14 +27,33 @@ export async function waitForReady(page: Page): Promise<void> {
 }
 
 /**
+ * Leert einen fokussierten CodeMirror-Editor.
+ *
+ * CodeMirror wählt die Tastenbelegung nach dem Browser, nicht nach dem Host-OS: In
+ * WebKit (navigator.vendor «Apple…») gilt die Apple-Belegung, dort ist Ctrl+A
+ * «Zeilenanfang» und Alles-Markieren liegt auf Cmd+A. `ControlOrMeta` richtet sich
+ * dagegen nach dem Host (Linux in der CI) und träfe die falsche Taste.
+ */
+export async function clearEditor(page: Page, editor: Locator): Promise<void> {
+  const apple = await page.evaluate(() => {
+    const nav = globalThis.navigator as { vendor?: string; platform?: string };
+    return /Apple/.test(nav.vendor ?? '') || /Mac|iPhone|iPad/.test(nav.platform ?? '');
+  });
+  await page.keyboard.press(apple ? 'Meta+A' : 'Control+A');
+  await page.keyboard.press('Delete');
+  // Fallback, falls die Tastenkombination im Browser nicht ankommt.
+  if ((await editor.innerText()).trim() !== '') await editor.fill('');
+  await expect(editor).toHaveText('');
+}
+
+/**
  * Ersetzt den Inhalt eines CodeMirror-Editors. `insertText` statt `fill`, damit der
  * Text wie eine Eingabe über die (virtuelle) Tastatur ankommt.
  */
 export async function setEditorText(page: Page, text: string, scope?: Locator): Promise<void> {
   const editor = (scope ?? activePanel(page)).locator('.cm-content').first();
   await editor.click();
-  await page.keyboard.press('ControlOrMeta+A');
-  await page.keyboard.press('Delete');
+  await clearEditor(page, editor);
   await page.keyboard.insertText(text);
   // Ein offenes Autocomplete-Popup schliessen.
   const tooltip = page.locator('.cm-tooltip-autocomplete');

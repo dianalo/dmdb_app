@@ -1,0 +1,236 @@
+/* Ausgabe: scrollt in sich selbst, nie die ganze Seite. */
+.output {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 12px 16px 24px;
+  background: var(--color-surface);
+}
+
+/* Eine einzelne Resultattabelle füllt die ganze Ausgabe. */
+.output[data-single] {
+  overflow: hidden;
+}
+
+.output[data-single] .block {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.output[data-single] .tableScroll {
+  flex: 0 1 auto;
+  max-height: none;
+}
+
+/* Überschriften nie zusammendrücken, nur die Tabelle schrumpft. */
+.statement,
+.summary,
+.note {
+  flex: none;
+}
+
+.empty {
+  margin: 8px 0;
+  color: var(--color-muted);
+  font-size: 15px;
+}
+
+.block {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.statement {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--color-muted);
+  white-space: pre-wrap;
+  word-break: break-word;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+}
+
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-title);
+}
+
+.summary svg {
+  flex: none;
+  color: var(--color-success);
+}
+
+.duration {
+  margin-left: 4px;
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--color-muted);
+}
+
+.note {
+  margin: 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--color-warning);
+  background: color-mix(in srgb, var(--color-warning) 10%, transparent);
+  font-size: 14px;
+}
+
+/* ---------- Resultattabelle ---------- */
+
+.tableScroll {
+  align-self: flex-start;
+  max-width: 100%;
+  min-height: 0;
+  max-height: 24rem;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.table {
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.table th,
+.table td {
+  padding: 6px 12px;
+  text-align: left;
+  white-space: nowrap;
+  max-width: 32rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid var(--color-border);
+  border-right: 1px solid var(--color-border);
+}
+
+.table th:last-child,
+.table td:last-child {
+  border-right: 0;
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background: #f0f0f0;
+  font-weight: 600;
+  color: var(--color-title);
+}
+
+.table [data-numeric] {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.table th[data-numeric] {
+  font-family: inherit;
+}
+
+.table td[data-null],
+.table td[data-blob] {
+  font-style: italic;
+  color: var(--color-muted);
+}
+
+/* ---------- Fehlerblock ---------- */
+
+.error {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 14px;
+  border-left: 4px solid var(--color-error);
+  background: color-mix(in srgb, var(--color-error) 6%, var(--color-bg));
+  border-radius: 0 var(--radius) var(--radius) 0;
+  cursor: pointer;
+}
+
+.errorTitle {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--color-error);
+}
+
+.errorTitle svg {
+  flex: none;
+  margin-top: 2px;
+}
+
+.errorText,
+.errorSuggestion {
+  margin: 0;
+  font-size: 15px;
+}
+
+.errorSuggestion {
+  font-weight: 600;
+}
+
+.errorDetails {
+  font-size: 14px;
+  color: var(--color-muted);
+  cursor: auto;
+}
+
+.errorDetails summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  cursor: pointer;
+}
+
+.errorDetails code {
+  display: block;
+  font-family: var(--font-mono);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.errorShow {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--touch-target);
+  padding: 0 10px;
+  margin-left: -10px;
+  color: var(--color-accent);
+  font-weight: 600;
+  border-radius: var(--radius);
+}
+
+@media (hover: hover) {
+  .errorShow:hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+}

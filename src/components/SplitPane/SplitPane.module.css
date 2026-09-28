@@ -1,0 +1,71 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.top {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 0;
+  flex-shrink: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.top[data-collapsed] {
+  visibility: hidden;
+}
+
+.handle {
+  position: relative;
+  z-index: 1;
+  flex: none;
+  height: var(--splitter-size);
+  background: var(--color-toolbar);
+  cursor: row-resize;
+  touch-action: none; /* sonst scrollt der Finger die Seite statt zu ziehen */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Trefferfläche grösser als die sichtbaren 6 px (insgesamt 16 px). */
+.handle::after {
+  content: '';
+  position: absolute;
+  inset: -5px 0;
+}
+
+/* Griffmarke in der Mitte. */
+.handle::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 40px;
+  height: 2px;
+  margin-left: -20px;
+  margin-top: -1px;
+  border-radius: 1px;
+  background: #9a9a9a;
+}
+
+.handle[data-dragging],
+.handle:focus-visible {
+  background: var(--color-accent);
+  outline-offset: 0;
+}
+
+.bottom {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+@media (hover: hover) {
+  .handle:hover {
+    background: #bdbdbd;
+  }
+}

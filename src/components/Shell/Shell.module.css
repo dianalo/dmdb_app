@@ -1,0 +1,159 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.body {
+  position: relative;
+  display: flex;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.sidebar {
+  flex: none;
+  width: 240px;
+  min-height: 0;
+  border-right: 1px solid var(--color-border);
+}
+
+/* Drawer unter 1024 px, standardmässig zu. */
+.drawer {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 20;
+  width: min(280px, 85vw);
+  border-right: 1px solid var(--color-border);
+  box-shadow: 2px 0 12px rgb(0 0 0 / 0.15);
+  transform: translateX(-105%);
+  transition: transform 180ms ease-out;
+  visibility: hidden;
+}
+
+.drawer[data-open] {
+  transform: none;
+  visibility: visible;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  background: rgb(0 0 0 / 0.25);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease-out;
+}
+
+.backdrop[data-open] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drawer,
+  .backdrop {
+    transition: none;
+  }
+}
+
+.main {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 0;
+}
+
+.panels {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.panel[hidden] {
+  display: none;
+}
+
+.placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  flex: 1 1 auto;
+  padding: 24px;
+  text-align: center;
+  color: var(--color-muted);
+}
+
+.placeholder h2 {
+  margin: 8px 0 0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  color: var(--color-title);
+}
+
+.placeholder p {
+  margin: 0;
+  font-size: 16px;
+}
+
+.placeholder .placeholderHint {
+  max-width: 32rem;
+  font-size: 14px;
+}
+
+/* ---------- Start- und Fehlerbildschirm ---------- */
+
+.status {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 100%;
+  padding: 24px;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 16px;
+}
+
+.statusTitle {
+  margin: 0;
+  font-size: 20px;
+  color: var(--color-error);
+}
+
+.statusText {
+  margin: 0;
+  max-width: 36rem;
+  color: var(--color-text);
+}
+
+.statusDetail {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 14px;
+}
+
+.reloadButton {
+  min-height: var(--touch-target);
+  padding: 0 20px;
+  border-radius: var(--radius);
+  background: var(--color-accent);
+  color: #ffffff;
+  font-weight: 600;
+}

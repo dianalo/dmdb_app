@@ -1,7 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import {
   activePanel,
-  clearEditor,
+  selectAllInEditor,
   firstSummary,
   openApp,
   openDialog,
@@ -172,7 +172,7 @@ test.describe('Tablet', () => {
     test.skip(!hasTouch, 'nur mit Touch-Emulation');
     const editor = activePanel(page).locator('.cm-content');
     await editor.tap();
-    await clearEditor(page, editor);
+    await selectAllInEditor(page);
     await page.keyboard.insertText('SELECT * FROM genre WHERE name = ');
     await page.keyboard.insertText('’Rock’');
     await expect(editor).toHaveText("SELECT * FROM genre WHERE name = 'Rock'");

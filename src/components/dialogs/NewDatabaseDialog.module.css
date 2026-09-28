@@ -1,0 +1,10 @@
+.editor {
+  height: clamp(180px, 36dvh, 340px);
+  border: 1px solid #b5b5b5;
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.editor :global(.cm-editor) {
+  height: 100%;
+}

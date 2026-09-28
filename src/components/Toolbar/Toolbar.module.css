@@ -89,3 +89,95 @@
     min-width: 0;
   }
 }
+
+.resetGroup {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Hinweis «Neue Version verfügbar»: Info-Farbe, führt zum Zurücksetzen. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--touch-target);
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #0b4f8a;
+  background: color-mix(in srgb, var(--color-info) 16%, var(--color-bg));
+  border: 1px solid color-mix(in srgb, var(--color-info) 50%, transparent);
+  border-radius: 999px;
+}
+
+/* Kurze Statusmeldung, z. B. «Datenbank zurückgesetzt.» */
+.toast {
+  position: fixed;
+  top: 60px;
+  left: 50%;
+  z-index: 90;
+  max-width: calc(100vw - 32px);
+  padding: 10px 16px;
+  font-size: 15px;
+  color: #ffffff;
+  background: #1f2933;
+  border-radius: 6px;
+  box-shadow: 0 6px 20px rgb(0 0 0 / 0.2);
+  transform: translateX(-50%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 150ms ease-out;
+}
+
+.toast[data-visible] {
+  opacity: 1;
+}
+
+.toast:empty {
+  padding: 0;
+}
+
+/* Einmaliger Hinweis zur lokalen Speicherung, direkt unter der Toolbar. */
+.notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding: 6px 12px;
+  font-size: 14px;
+  background: color-mix(in srgb, var(--color-info) 10%, var(--color-bg));
+  border-bottom: 1px solid color-mix(in srgb, var(--color-info) 35%, transparent);
+  flex: none;
+}
+
+.notice svg {
+  flex: none;
+  color: var(--color-info);
+}
+
+.noticeText {
+  flex: 1 1 20rem;
+  margin: 0;
+}
+
+.noticeButton {
+  min-height: var(--touch-target);
+  padding: 0 14px;
+  font-weight: 600;
+  color: var(--color-accent);
+  border: 1px solid currentColor;
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+@media (hover: hover) {
+  .badge:hover {
+    background: color-mix(in srgb, var(--color-info) 26%, var(--color-bg));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    transition: none;
+  }
+}

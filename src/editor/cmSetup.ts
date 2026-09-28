@@ -54,7 +54,8 @@ export function sqlLanguage(schema: SQLNamespace): Extension {
   return sql({ dialect: SQLite, schema, upperCaseKeywords: true });
 }
 
-const highlightStyle = HighlightStyle.define([
+/** Farben der SQL-Syntax, auch für die schreibgeschützte DDL-Ansicht. */
+export const highlightStyle = HighlightStyle.define([
   { tag: [t.keyword, t.operatorKeyword, t.modifier], color: 'var(--syntax-keyword)' },
   { tag: [t.string, t.special(t.string)], color: 'var(--syntax-string)' },
   { tag: [t.number, t.bool, t.null], color: 'var(--syntax-number)' },

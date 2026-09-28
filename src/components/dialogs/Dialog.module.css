@@ -1,0 +1,181 @@
+.dialog {
+  width: min(520px, calc(100vw - 32px));
+  max-width: none;
+  max-height: calc(100dvh - 32px);
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  color: var(--color-text);
+  background: var(--color-bg);
+  box-shadow: 0 12px 40px rgb(0 0 0 / 0.25);
+  overscroll-behavior: contain;
+}
+
+.dialog[data-size='wide'] {
+  width: min(760px, calc(100vw - 32px));
+}
+
+.dialog::backdrop {
+  background: rgb(0 0 0 / 0.35);
+}
+
+.frame {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 34px);
+  margin: 0;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 4px 4px 20px;
+  border-bottom: 1px solid var(--color-border);
+  flex: none;
+}
+
+.title {
+  flex: 1 1 auto;
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.closeButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  border-radius: var(--radius);
+  color: var(--color-muted);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 20px;
+  overflow-y: auto;
+  min-height: 0;
+  font-size: 15px;
+}
+
+.body p {
+  margin: 0;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--color-border);
+  flex: none;
+}
+
+/* ---------- Buttons (auch von anderen Dialogen verwendet) ---------- */
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 96px;
+  min-height: var(--touch-target);
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 600;
+  border: 1px solid #b5b5b5;
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.primary {
+  color: #ffffff;
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.danger {
+  color: #ffffff;
+  background: var(--color-error);
+  border-color: var(--color-error);
+}
+
+.button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (hover: hover) {
+  .closeButton:hover,
+  .button:not(.primary, .danger):not(:disabled):hover {
+    background: var(--color-code-bg);
+  }
+
+  .primary:not(:disabled):hover,
+  .danger:not(:disabled):hover {
+    filter: brightness(1.1);
+  }
+}
+
+/* ---------- Formularfelder ---------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.label {
+  font-weight: 600;
+}
+
+.hint {
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+.input {
+  min-height: var(--touch-target);
+  padding: 0 10px;
+  font: inherit;
+  font-size: 16px; /* ≥ 16 px, sonst zoomt iOS beim Fokussieren */
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid #b5b5b5;
+  border-radius: var(--radius);
+}
+
+.input[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.fieldError {
+  margin: 0;
+  color: var(--color-error);
+  font-weight: 600;
+}
+
+/* Schmale Bildschirme: Dialog über die ganze Breite, unten angedockt. */
+@media (max-width: 599px) {
+  .dialog,
+  .dialog[data-size='wide'] {
+    width: 100%;
+    max-height: 100dvh;
+    margin: auto 0 0;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .frame {
+    max-height: calc(100dvh - 2px);
+  }
+
+  .footer .button {
+    flex: 1 1 auto;
+  }
+}

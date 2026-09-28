@@ -168,6 +168,21 @@ describe('stores', () => {
       expect(useDbStore.getState().activeDbId).toBe(meta.id);
     });
 
+    it('importSqliteFile benennt nach der Datei und macht den Namen eindeutig', async () => {
+      await useDbStore.getState().init();
+      const SQL = await loadTestSqlJs();
+      const source = new SQL.Database();
+      source.run('CREATE TABLE t (a INTEGER);');
+      const bytes = source.export();
+      source.close();
+
+      const first = await useDbStore.getState().importSqliteFile('schule.sqlite', bytes);
+      const second = await useDbStore.getState().importSqliteFile('Schule.db', bytes);
+      expect(first.name).toBe('schule');
+      expect(second.name).toBe('Schule (2)');
+      expect(useDbStore.getState().activeDbId).toBe(second.id);
+    });
+
     it('fällt auf die Beispieldatenbank zurück, wenn activeDbId unbekannt ist', async () => {
       await resetDmdbForTests();
       await setSetting('activeDbId', 'gibt-es-nicht');
@@ -260,6 +275,38 @@ describe('stores', () => {
       await hydrateApp();
       expect(useScratchbookStore.getState().list.map((item) => item.name)).toEqual(['Übung K4']);
       expect(useScratchbookStore.getState().contents[sb.id]).toBe('SELECT * FROM song;');
+    });
+
+    it('create vergibt den ersten freien Standardnamen', async () => {
+      await hydrateApp();
+      const a = await useScratchbookStore.getState().create();
+      const b = await useScratchbookStore.getState().create();
+      await useScratchbookStore.getState().remove(a.id);
+      const c = await useScratchbookStore.getState().create();
+      expect([a.name, b.name, c.name]).toEqual([
+        'Scratch-Book 1',
+        'Scratch-Book 2',
+        'Scratch-Book 1',
+      ]);
+    });
+
+    it('createFromFile übernimmt Name und Inhalt und öffnet den Tab', async () => {
+      await hydrateApp();
+      const first = await useScratchbookStore
+        .getState()
+        .createFromFile('Übung K4.sql', 'SELECT 1;');
+      const second = await useScratchbookStore.getState().createFromFile('übung k4.txt', '');
+      const third = await useScratchbookStore.getState().createFromFile('.sql', 'x');
+      expect(first.name).toBe('Übung K4');
+      expect(second.name).toBe('übung k4 (2)');
+      expect(third.name).toBe('Scratch-Book 1');
+      expect(useScratchbookStore.getState().contents[first.id]).toBe('SELECT 1;');
+      expect(useUiStore.getState().activeTabId).toBe(scratchbookTabId(third.id));
+
+      restart();
+      await hydrateApp();
+      await useScratchbookStore.getState().ensureLoaded(first.id);
+      expect(useScratchbookStore.getState().contents[first.id]).toBe('SELECT 1;');
     });
 
     it('benennt um und löscht (inklusive Tab)', async () => {

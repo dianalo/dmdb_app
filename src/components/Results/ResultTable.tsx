@@ -1,6 +1,6 @@
 import { memo } from 'react';
 import type { SqlValue } from '@/db';
-import { cellText } from './resultText';
+import { ValueCell } from './cells';
 import styles from './Results.module.css';
 
 interface ResultTableProps {
@@ -41,14 +41,7 @@ export const ResultTable = memo(function ResultTable({ columns, rows }: ResultTa
           {rows.map((row, rowIndex) => (
             <tr key={rowIndex}>
               {row.map((value, index) => (
-                <td
-                  key={index}
-                  data-numeric={typeof value === 'number' || undefined}
-                  data-null={value === null || undefined}
-                  data-blob={value instanceof Uint8Array || undefined}
-                >
-                  {cellText(value)}
-                </td>
+                <ValueCell key={index} value={value} />
               ))}
             </tr>
           ))}

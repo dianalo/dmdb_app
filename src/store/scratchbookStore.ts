@@ -5,6 +5,7 @@
  * wird daraus abgeleitet, damit es nur eine Quelle der Wahrheit gibt.
  */
 import { create } from 'zustand';
+import { downloadText } from '@/files/download';
 import { de } from '@/i18n/de';
 import {
   createAutosaver,
@@ -16,6 +17,7 @@ import {
   saveScratchbookContent,
   type ScratchbookRecord,
 } from '@/persistence';
+import { nameFromFilename, uniqueName } from './names';
 import { scratchbookTabId, useUiStore } from './uiStore';
 
 /** Listeneintrag ohne Inhalt. */
@@ -30,7 +32,11 @@ export interface ScratchbookState {
   /** Lädt den Inhalt (falls nötig) und öffnet bzw. aktiviert den Tab. */
   open(id: string): Promise<void>;
   /** Legt ein Scratch-Book an und öffnet es; ohne Name «Scratch-Book N». */
-  create(name?: string): Promise<ScratchbookRecord>;
+  create(name?: string, content?: string): Promise<ScratchbookRecord>;
+  /** Legt ein Scratch-Book aus einer geöffneten Datei an (Name ohne Endung, eindeutig). */
+  createFromFile(filename: string, content: string): Promise<ScratchbookRecord>;
+  /** Lädt ein Scratch-Book als `.sql`-Datei herunter (nur im Browser). */
+  download(id: string): Promise<void>;
   /** Lädt den Inhalt eines Scratch-Books in den Cache, ohne den Tab zu öffnen. */
   ensureLoaded(id: string): Promise<void>;
   updateContent(id: string, content: string): void;
@@ -98,15 +104,29 @@ export const useScratchbookStore = create<ScratchbookState>()((set, get) => ({
     useUiStore.getState().openScratchbook(id, entry.name);
   },
 
-  async create(name) {
+  async create(name, content = '') {
     const finalName = name?.trim() || nextScratchbookName(get().list.map((item) => item.name));
-    const record = await createScratchbook(finalName);
+    const record = await createScratchbook(finalName, content);
     set((state) => ({
       list: [summarize(record), ...state.list],
       contents: { ...state.contents, [record.id]: record.content },
     }));
     useUiStore.getState().openScratchbook(record.id, record.name);
     return record;
+  },
+
+  createFromFile(filename, content) {
+    const existing = get().list.map((item) => item.name);
+    const base = nameFromFilename(filename, nextScratchbookName(existing));
+    return get().create(uniqueName(base, existing), content);
+  },
+
+  async download(id) {
+    await autosaver.flush();
+    const entry = get().list.find((item) => item.id === id);
+    if (!entry) return;
+    const content = get().contents[id] ?? (await getScratchbook(id))?.content ?? '';
+    downloadText(`${entry.name}.sql`, content);
   },
 
   updateContent(id, content) {

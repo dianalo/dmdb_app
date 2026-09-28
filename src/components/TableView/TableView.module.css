@@ -1,0 +1,236 @@
+/* Tabellen-Tab: Kopfzeile fix, darunter scrollt nur der Inhalt. */
+.tableView {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+  background: var(--color-surface);
+}
+
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  flex: none;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.title {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-title);
+}
+
+.rowCount {
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  margin-left: auto;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--touch-target);
+  padding: 0 10px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+  color: var(--color-muted);
+}
+
+.search:focus-within {
+  border-color: var(--color-accent);
+  outline: 1px solid var(--color-accent);
+}
+
+.search input {
+  width: 14rem;
+  max-width: 50vw;
+  min-height: calc(var(--touch-target) - 2px);
+  border: 0;
+  outline: none;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  font-size: 16px; /* ≥ 16 px, sonst zoomt iOS beim Fokussieren */
+}
+
+/* Umschalter «Daten | DDL» */
+.segmented {
+  display: inline-flex;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.segmented button {
+  min-width: 4.5rem;
+  min-height: var(--touch-target);
+  padding: 0 14px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-accent);
+  background: var(--color-bg);
+}
+
+.segmented button + button {
+  border-left: 1px solid var(--color-accent);
+}
+
+.segmented button[aria-pressed='true'] {
+  color: #ffffff;
+  background: var(--color-accent);
+}
+
+@media (hover: hover) {
+  .segmented button[aria-pressed='false']:hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+}
+
+/* ---------- Daten ---------- */
+
+.dataPane,
+.ddlPane {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding: 12px 16px;
+}
+
+.scroll {
+  flex: 0 1 auto;
+  align-self: flex-start;
+  max-width: 100%;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-bg);
+}
+
+.table th {
+  padding: 0;
+  vertical-align: bottom;
+}
+
+.sortButton {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  width: 100%;
+  min-height: var(--touch-target);
+  padding: 0 8px 0 12px;
+  font-weight: 600;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.table th[data-numeric] .sortButton {
+  justify-content: flex-end;
+}
+
+@media (hover: hover) {
+  .sortButton:hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+}
+
+.sortButton:focus-visible {
+  outline-offset: -2px;
+}
+
+.pk {
+  display: inline-flex;
+  color: var(--color-warning);
+}
+
+/* Platz für den Pfeil reservieren, damit die Spalte beim Sortieren nicht springt. */
+.sortIcon {
+  display: inline-flex;
+  width: 16px;
+  flex: none;
+  color: var(--color-accent);
+}
+
+.empty {
+  margin: 0;
+  padding: 12px;
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  flex: none;
+}
+
+.counter {
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+.moreButton {
+  min-height: var(--touch-target);
+  padding: 0 16px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius);
+  color: var(--color-accent);
+  font-weight: 600;
+  background: var(--color-bg);
+}
+
+.moreButton:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+@media (hover: hover) {
+  .moreButton:not(:disabled):hover {
+    background: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  }
+}
+
+/* ---------- DDL und Meldungen ---------- */
+
+.note {
+  flex: none;
+  margin: 0;
+  font-size: 15px;
+  color: var(--color-muted);
+}
+
+.message {
+  margin: 0;
+  padding: 24px 16px;
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+.message p {
+  margin: 0 0 4px;
+}
+
+.errorTitle {
+  font-weight: 700;
+  color: var(--color-error);
+}

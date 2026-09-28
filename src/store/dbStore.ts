@@ -32,6 +32,7 @@ import {
 } from '@/persistence';
 import { builtinDbId, builtinSeeds } from '@/seeds';
 import { getEngine, seedBuilder, withScratchEngine } from './engine';
+import { nameFromFilename, uniqueName } from './names';
 
 export type DbStatus = 'idle' | 'loading' | 'ready' | 'error';
 
@@ -66,6 +67,8 @@ export interface DbState {
   deleteDatabase(id: string): Promise<void>;
   /** Importiert eine `.sqlite`-Datei als eigene Datenbank und aktiviert sie. */
   importSqlite(name: string, bytes: Uint8Array): Promise<DbMeta>;
+  /** Wie `importSqlite`, der Name kommt aus dem Dateinamen (ohne Endung, eindeutig gemacht). */
+  importSqliteFile(filename: string, bytes: Uint8Array): Promise<DbMeta>;
   /** Lädt die aktive Datenbank als `.sqlite` herunter (nur im Browser). */
   downloadActive(): Promise<void>;
 }
@@ -255,6 +258,12 @@ export const useDbStore = create<DbState>()((set, get) => {
         await activate(meta.id);
         return meta;
       });
+    },
+
+    importSqliteFile(filename, bytes) {
+      const existing = get().databases.map((db) => db.name);
+      const name = uniqueName(nameFromFilename(filename, de.dialogs.importFallbackName), existing);
+      return get().importSqlite(name, bytes);
     },
 
     downloadActive() {

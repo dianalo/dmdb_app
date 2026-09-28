@@ -16,9 +16,51 @@
 
 .headingRow {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
   padding-right: 4px;
+}
+
+.headingActions {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+}
+
+.row .item {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.row[data-current] {
+  background: color-mix(in srgb, var(--color-accent) 8%, transparent);
+}
+
+.row[data-current] .item[aria-current='page'] {
+  background: none;
+}
+
+.moreButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: var(--touch-target);
+  height: var(--touch-target);
+  margin-right: 4px;
+  color: var(--color-muted);
+  border-radius: var(--radius);
+}
+
+.moreButton[aria-expanded='true'] {
+  background: var(--color-code-bg);
+  color: var(--color-text);
 }
 
 .heading {
@@ -72,7 +114,7 @@
   align-items: center;
   gap: 4px;
   min-height: var(--touch-target);
-  padding: 0 12px;
+  padding: 0 8px;
   color: var(--color-accent);
   font-weight: 600;
   border-radius: var(--radius);
@@ -85,7 +127,8 @@
 
 @media (hover: hover) {
   .item:hover,
-  .newButton:hover {
+  .newButton:hover,
+  .moreButton:hover {
     background: var(--color-code-bg);
   }
 }

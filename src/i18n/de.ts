@@ -34,6 +34,21 @@ export const de = {
     resetTitle: 'Beispieldatenbank auf den Ausgangszustand zurücksetzen',
     help: 'Hilfe',
     comingSoon: 'Folgt in einer späteren Version',
+    resetOnlyBuiltin: 'Nur Beispieldatenbanken lassen sich zurücksetzen.',
+    seedOutdated: 'Neue Version verfügbar',
+    seedOutdatedTitle: 'Neue Version der Beispieldatenbank. Zurücksetzen lädt sie.',
+    dbActions: 'Datenbank-Aktionen',
+    newDatabase: 'Neue Datenbank…',
+    importDatabase: 'Datenbank importieren (.sqlite)…',
+    downloadDatabase: 'Herunterladen (.sqlite)',
+    deleteDatabase: 'Löschen',
+    resetDone: 'Datenbank zurückgesetzt.',
+    dbCreated: (name: string) => `Datenbank «${name}» erstellt.`,
+    dbImported: (name: string) => `Datenbank «${name}» importiert.`,
+    dbDeleted: (name: string) => `Datenbank «${name}» gelöscht.`,
+    storageNotice:
+      'Deine Datenbanken und Scratch-Books werden nur in diesem Browser gespeichert. Lade wichtige Arbeiten über «⋯» herunter.',
+    storageNoticeOk: 'Verstanden',
   },
   sidebar: {
     label: 'Seitenleiste',
@@ -44,6 +59,9 @@ export const de = {
     newScratchbook: 'Neu',
     newScratchbookLabel: 'Neues Scratch-Book erstellen',
     defaultScratchbookName: (n: number) => `Scratch-Book ${n}`,
+    openScratchbook: 'Öffnen…',
+    openScratchbookLabel: 'Scratch-Book aus einer .sql-Datei öffnen',
+    itemActions: (name: string) => `Aktionen für «${name}»`,
   },
   tabs: {
     label: 'Offene Tabs',
@@ -96,13 +114,209 @@ export const de = {
     persistFailed: 'Die Änderungen konnten nicht gespeichert werden.',
   },
   tableView: {
-    placeholder: 'Tabellenansicht folgt',
-    placeholderHint: (name: string) =>
-      `Bis dahin kannst du im Tab «SQL» zum Beispiel SELECT * FROM ${name}; ausführen.`,
+    rowCount: zeilen,
+    counter: (shown: number, total: number) => `${shown} von ${zeilen(total)}`,
+    search: 'Suchen…',
+    searchLabel: (name: string) => `In der Tabelle «${name}» suchen`,
+    modeLabel: 'Ansicht',
+    data: 'Daten',
+    ddl: 'DDL',
+    primaryKey: 'Primärschlüssel',
+    tableLabel: (name: string) => `Daten der Tabelle «${name}»`,
+    loadMore: 'Mehr laden',
+    loading: 'Wird geladen…',
+    noMatches: 'Keine Zeilen gefunden.',
+    empty: 'Die Tabelle ist leer.',
+    missing: (name: string) => `Die Tabelle «${name}» existiert nicht mehr.`,
+    loadFailed: 'Die Tabelle konnte nicht geladen werden.',
+    ddlNote: 'So ist die Tabelle in der Datenbank definiert (DDL).',
+    ddlLabel: (name: string) => `DDL der Tabelle «${name}»`,
   },
-  dialogs: {},
-  scratchbooks: {},
-  help: {},
+  dialogs: {
+    close: 'Schliessen',
+    cancel: 'Abbrechen',
+    ok: 'OK',
+    save: 'Speichern',
+    working: 'Bitte warten…',
+    nameLabel: 'Name',
+    nameRequired: 'Gib einen Namen ein.',
+    dbNameTaken: (name: string) => `Es gibt schon eine Datenbank mit dem Namen «${name}».`,
+    scratchbookNameTaken: (name: string) =>
+      `Es gibt schon ein Scratch-Book mit dem Namen «${name}».`,
+    actionFailed: 'Das hat leider nicht geklappt.',
+    importFailedTitle: 'Import fehlgeschlagen',
+    importFallbackName: 'Importierte Datenbank',
+    newDb: {
+      title: 'Neue Datenbank',
+      namePlaceholder: 'z. B. Schule',
+      sqlLabel: 'SQL-Script mit CREATE TABLE und INSERT INTO',
+      sqlHint:
+        'Das Script läuft in einer leeren Datenbank. Bei einem Fehler wird nichts gespeichert. Ctrl/Cmd + Enter erstellt die Datenbank.',
+      editorLabel: 'SQL-Script für die neue Datenbank',
+      create: 'Erstellen',
+      example: [
+        '-- Schreibe hier die Tabellen und Daten deiner Datenbank.',
+        '-- Beispiel (entferne die zwei Bindestriche am Zeilenanfang):',
+        '--',
+        '-- CREATE TABLE klasse (',
+        '--   id   INTEGER PRIMARY KEY,',
+        '--   name TEXT NOT NULL',
+        '-- );',
+        "-- INSERT INTO klasse (name) VALUES ('4a'), ('4b');",
+        '',
+        '',
+      ].join('\n'),
+    },
+    deleteDb: {
+      title: 'Datenbank löschen',
+      text: (name: string) =>
+        `Datenbank «${name}» löschen? Das kann nicht rückgängig gemacht werden.`,
+      confirm: 'Löschen',
+    },
+    resetDb: {
+      title: 'Datenbank zurücksetzen',
+      text: 'Die Beispieldatenbank wird auf den Originalzustand zurückgesetzt. Alle Änderungen gehen verloren.',
+      outdated: 'Es gibt eine neue Version der Beispieldatenbank. Zurücksetzen lädt sie.',
+      confirm: 'Zurücksetzen',
+    },
+  },
+  scratchbooks: {
+    rename: 'Umbenennen',
+    download: 'Herunterladen (.sql)',
+    delete: 'Löschen',
+    renameTitle: 'Scratch-Book umbenennen',
+    deleteTitle: 'Scratch-Book löschen',
+    deleteText: (name: string) =>
+      `Scratch-Book «${name}» löschen? Das kann nicht rückgängig gemacht werden.`,
+    openFailed: 'Die Datei konnte nicht gelesen werden.',
+    openFailedTitle: 'Öffnen fehlgeschlagen',
+  },
+  help: {
+    title: 'SQL-Spickzettel',
+    intro: 'Die wichtigsten Befehle mit je einem Beispiel zur Datenbank Musik-Streaming.',
+    insert: 'In Editor einfügen',
+    insertLabel: (title: string) => `Beispiel «${title}» in den Editor einfügen`,
+    additum: 'Additum',
+    sections: [
+      {
+        heading: 'Abfragen',
+        items: [
+          {
+            title: 'SELECT … FROM',
+            text: 'Wählt Spalten aus einer Tabelle; * steht für alle Spalten.',
+            example: 'SELECT titel, dauer_sek FROM song;',
+          },
+          {
+            title: 'ORDER BY',
+            text: 'Sortiert das Resultat: ASC aufsteigend (Standard), DESC absteigend.',
+            example: 'SELECT titel, dauer_sek FROM song ORDER BY dauer_sek DESC;',
+          },
+        ],
+      },
+      {
+        heading: 'Filtern',
+        items: [
+          {
+            title: 'WHERE',
+            text: 'Behält nur Zeilen, die die Bedingung erfüllen. Vergleiche: = != < <= > >=. Text steht in einfachen Anführungszeichen.',
+            example: "SELECT name FROM kuenstler WHERE land = 'Schweiz';",
+          },
+          {
+            title: 'AND, OR, NOT',
+            text: 'Verknüpft Bedingungen: AND (beide), OR (mindestens eine), NOT (Gegenteil).',
+            example: 'SELECT titel FROM song WHERE dauer_sek < 180 OR dauer_sek > 300;',
+          },
+          {
+            title: 'LIKE',
+            text: 'Sucht Textmuster: % steht für beliebig viele Zeichen, _ für genau ein Zeichen.',
+            example: "SELECT titel FROM song WHERE titel LIKE '%Nacht%';",
+          },
+          {
+            title: 'IN (…)',
+            text: 'Prüft, ob ein Wert in einer Liste vorkommt.',
+            example: "SELECT name FROM kuenstler WHERE land IN ('Schweiz', 'Italien');",
+          },
+        ],
+      },
+      {
+        heading: 'Tabellen verbinden',
+        items: [
+          {
+            title: 'JOIN … ON',
+            text: 'Verbindet zwei Tabellen über Fremdschlüssel und Primärschlüssel.',
+            example:
+              'SELECT song.titel, album.titel\nFROM song\nJOIN album ON song.album_id = album.id;',
+          },
+        ],
+      },
+      {
+        heading: 'Zählen und Gruppieren',
+        items: [
+          {
+            title: 'COUNT(*)',
+            text: 'Zählt die Zeilen des Resultats.',
+            example: 'SELECT COUNT(*) FROM song;',
+          },
+          {
+            title: 'GROUP BY',
+            text: 'Bildet Gruppen mit gleichem Wert und rechnet pro Gruppe, z. B. COUNT(*).',
+            example: 'SELECT album_id, COUNT(*) FROM song GROUP BY album_id;',
+          },
+          {
+            title: 'SUM, AVG, MIN, MAX',
+            text: 'Summe, Durchschnitt, kleinster und grösster Wert einer Spalte.',
+            example: 'SELECT MIN(dauer_sek), MAX(dauer_sek), AVG(dauer_sek) FROM song;',
+            additum: true,
+          },
+          {
+            title: 'HAVING',
+            text: 'Filtert Gruppen nach GROUP BY; WHERE filtert dagegen einzelne Zeilen davor.',
+            example:
+              'SELECT album_id, COUNT(*) FROM song\nGROUP BY album_id\nHAVING COUNT(*) >= 10;',
+            additum: true,
+          },
+        ],
+      },
+      {
+        heading: 'Daten ändern',
+        items: [
+          {
+            title: 'INSERT INTO … VALUES',
+            text: 'Fügt eine neue Zeile ein.',
+            example: "INSERT INTO genre (name) VALUES ('Polka');",
+          },
+          {
+            title: 'UPDATE … SET … WHERE',
+            text: 'Ändert Werte. Achtung: Ohne WHERE werden alle Zeilen geändert.',
+            example: "UPDATE genre SET name = 'Volksmusik' WHERE name = 'Polka';",
+          },
+          {
+            title: 'DELETE FROM … WHERE',
+            text: 'Löscht Zeilen. Achtung: Ohne WHERE wird die ganze Tabelle geleert.',
+            example: "DELETE FROM genre WHERE name = 'Volksmusik';",
+          },
+        ],
+      },
+      {
+        heading: 'Tabellen erstellen',
+        items: [
+          {
+            title: 'CREATE TABLE',
+            text: 'Erstellt eine neue Tabelle mit Spalten, Datentypen und Primärschlüssel.',
+            example: 'CREATE TABLE notiz (\n  id   INTEGER PRIMARY KEY,\n  text TEXT NOT NULL\n);',
+          },
+        ],
+      },
+    ],
+    usageHeading: 'Bedienung',
+    usage: [
+      'Ausführen: Button «Ausführen» oder Ctrl/Cmd + Enter.',
+      'Markierst du einen Teil des SQL, wird nur die Markierung ausgeführt.',
+      'Tippe links auf eine Tabelle, um ihre Daten und ihre Definition zu sehen.',
+      '«Zurücksetzen» stellt die Beispieldatenbank wieder her, z. B. nach einem DELETE ohne WHERE.',
+      'Deine Daten liegen nur in diesem Browser. Lade wichtige Arbeiten zur Sicherung über «⋯» herunter.',
+    ],
+  },
   errors: {
     dbNotFound: 'Diese Datenbank gibt es nicht mehr.',
     builtinNotDeletable: 'Die Beispieldatenbank kann nicht gelöscht werden.',

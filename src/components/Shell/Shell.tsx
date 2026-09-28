@@ -2,10 +2,10 @@ import { useEffect } from 'react';
 import { EditorTab } from '@/components/Editor/EditorTab';
 import { SidePanel } from '@/components/SidePanel/SidePanel';
 import { Tabs } from '@/components/Tabs/Tabs';
+import { TableView } from '@/components/TableView/TableView';
 import { Toolbar } from '@/components/Toolbar/Toolbar';
 import { useBreakpoint } from '@/hooks/useBreakpoint';
 import { tabButtonId, tabPanelId, useUiStore } from '@/store/uiStore';
-import { TablePlaceholder } from './TablePlaceholder';
 import styles from './Shell.module.css';
 
 /**
@@ -73,7 +73,7 @@ export function Shell() {
                   hidden={!active}
                 >
                   {tab.kind === 'table' ? (
-                    <TablePlaceholder name={tab.refId ?? tab.title} />
+                    <TableView name={tab.refId ?? tab.title} active={active} />
                   ) : (
                     // Editor-Tabs bleiben gemountet, damit Verlauf und Cursor erhalten bleiben.
                     <EditorTab tab={tab} active={active} />

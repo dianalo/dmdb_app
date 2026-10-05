@@ -85,6 +85,9 @@ const theme = EditorView.theme({
   '.cm-lineNumbers .cm-gutterElement': { padding: '0 8px 0 12px', minWidth: '3ch' },
   '.cm-activeLine': { backgroundColor: 'var(--color-line-focus)' },
   '.cm-activeLineGutter': { backgroundColor: 'var(--color-line-focus)' },
+  // Bei einer Selektion soll die Selektion sichtbar sein, nicht die aktive Zeile
+  // (wie in VS Code). Die Zeilennummer im Gutter bleibt hervorgehoben.
+  '&.cm-hasSelection .cm-activeLine': { backgroundColor: 'transparent' },
   '.cm-errorRange': {
     backgroundColor: 'color-mix(in srgb, var(--color-error) 14%, transparent)',
     textDecoration: 'underline wavy var(--color-error)',
@@ -93,6 +96,13 @@ const theme = EditorView.theme({
   '.cm-tooltip': { fontSize: '15px' },
   '.cm-tooltip-autocomplete ul li': { padding: '4px 8px' },
 });
+
+/** Klasse `cm-hasSelection` am Editor, solange irgendein Bereich selektiert ist. */
+const hasSelectionClass = EditorView.editorAttributes.compute(
+  ['selection'],
+  (state): Record<string, string> =>
+    state.selection.ranges.some((range) => !range.empty) ? { class: 'cm-hasSelection' } : {},
+);
 
 /* ---------- Fehlermarkierung ---------- */
 
@@ -181,6 +191,7 @@ export function editorExtensions(
     closeBrackets(),
     autocompletion({ activateOnTyping: true }),
     highlightActiveLine(),
+    hasSelectionClass,
     keymap.of([
       ...closeBracketsKeymap,
       ...defaultKeymap,

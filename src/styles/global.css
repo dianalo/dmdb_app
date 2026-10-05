@@ -38,3 +38,14 @@ button {
   outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
+
+/* Fira Mono Bold (SIL OFL 1.1, siehe src/assets/fonts/OFL-FiraMono.txt), nur für die
+   Wortmarke. Eigener Familienname, damit der Editor nicht auf den fetten Schnitt
+   ausweicht. */
+@font-face {
+  font-family: 'web-db Wordmark';
+  src: url('../assets/fonts/fira-mono-latin-700.woff2') format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}

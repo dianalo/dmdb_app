@@ -33,6 +33,20 @@ type OpenDialog =
 const messageOf = (error: unknown): string =>
   error instanceof Error && error.message ? error.message : de.dialogs.actionFailed;
 
+/** Wortmarke «web-db»: Bindestrich in Akzentfarbe, vorgelesen wird der ganze Name. */
+function Wordmark() {
+  const [before, ...rest] = de.app.title.split('-');
+  return (
+    <span className={styles.wordmark} aria-label={de.app.title}>
+      <span aria-hidden="true">
+        {before}
+        {rest.length > 0 && <span className={styles.wordmarkDash}>-</span>}
+        {rest.join('-')}
+      </span>
+    </span>
+  );
+}
+
 export function Toolbar({ showSidebarToggle }: { showSidebarToggle: boolean }) {
   const selectId = useId();
   const databases = useDbStore((state) => state.databases);
@@ -127,7 +141,7 @@ export function Toolbar({ showSidebarToggle }: { showSidebarToggle: boolean }) {
 
         <h1 className={styles.title}>
           <Icon path={mdiDatabaseOutline} />
-          <span>{de.app.title}</span>
+          <Wordmark />
         </h1>
 
         <div className={styles.dbPicker}>

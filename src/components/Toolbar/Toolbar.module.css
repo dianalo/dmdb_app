@@ -20,6 +20,20 @@
   white-space: nowrap;
 }
 
+/* Wortmarke «web-db» in Fira Mono Bold, wie die Wortmarke «k♪t» im Skript.
+   Der Bindestrich trägt die Akzentfarbe. */
+.wordmark {
+  font-family: 'web-db Wordmark', var(--font-mono);
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: -0.01em;
+  color: var(--color-title);
+}
+
+.wordmarkDash {
+  color: var(--color-accent);
+}
+
 .dbPicker {
   display: flex;
   align-items: center;

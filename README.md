@@ -1,4 +1,4 @@
-# DB-Client
+# web-db
 
 Eine schlanke Web-Umgebung, in der Schüler:innen SQL direkt im Browser schreiben und ausführen –
 quasi ein «WebTigerPython für Datenbanken». Die App begleitet Teil 2 (Kapitel 3 bis 7) der

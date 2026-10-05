@@ -19,7 +19,7 @@ function zeilen(n: number): string {
 
 export const de = {
   app: {
-    title: 'DB-Client',
+    title: 'web-db',
     loading: 'Datenbank wird geladen…',
     errorTitle: 'Die App konnte nicht starten.',
     errorHint:

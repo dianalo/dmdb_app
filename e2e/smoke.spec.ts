@@ -22,7 +22,7 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('App lädt mit Beispieldatenbank und Speicherhinweis', async ({ page }) => {
-  await expect(page).toHaveTitle(/DB-Client/);
+  await expect(page).toHaveTitle(/web-db/);
   await showSidebar(page);
   const tables = page.getByRole('region', { name: 'Tabellen' }).getByRole('listitem');
   await expect(tables).toHaveCount(10);

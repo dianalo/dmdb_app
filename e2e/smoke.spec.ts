@@ -126,7 +126,32 @@ test('Neue Datenbank aus DDL erstellen und wieder löschen', async ({ page }) =>
   await openDialog(page).getByRole('button', { name: 'Löschen' }).click();
   await expect(openDialog(page)).toHaveCount(0);
   await expect(dbSelect.locator('option', { hasText: 'Schule' })).toHaveCount(0);
-  await expect(dbSelect.locator('option:checked')).toHaveText('Musik-Streaming');
+  await expect(dbSelect.locator('option:checked')).toHaveText('k♪t Musik-Streaming');
+});
+
+test('Podcast-Datenbank aus dem Skript herunterladen und importieren', async ({ page }) => {
+  // Dieselbe URL steht im Skript (Kapitel 3, Aufgabe «Eine fremde Datenbank erkunden»).
+  const response = await page.request.get('daten/podcast.sqlite');
+  expect(response.ok()).toBe(true);
+  const bytes = await response.body();
+  expect(bytes.subarray(0, 15).toString('latin1')).toBe('SQLite format 3');
+
+  const chooser = page.waitForEvent('filechooser');
+  await page.getByRole('button', { name: 'Datenbank-Aktionen' }).click();
+  await page.getByRole('menuitem', { name: /Datenbank importieren/ }).click();
+  await (
+    await chooser
+  ).setFiles({
+    name: 'podcast.sqlite',
+    mimeType: 'application/vnd.sqlite3',
+    buffer: bytes,
+  });
+
+  const dbSelect = page.getByRole('combobox', { name: 'Datenbank' });
+  await expect(dbSelect.locator('option:checked')).toHaveText('podcast');
+  await expect(page.locator('#sidepanel').getByText('episode', { exact: true })).toHaveCount(1);
+  await runSql(page, 'SELECT COUNT(*) FROM episode;');
+  await expect(activePanel(page).locator('article tbody td').first()).toHaveText('21');
 });
 
 test('Scratch-Book bleibt nach Reload erhalten', async ({ page }) => {

@@ -193,7 +193,7 @@ export const de = {
   },
   help: {
     title: 'SQL-Spickzettel',
-    intro: 'Die wichtigsten Befehle mit je einem Beispiel zur Datenbank Musik-Streaming.',
+    intro: 'Die wichtigsten Befehle mit je einem Beispiel zur Datenbank k♪t Musik-Streaming.',
     insert: 'In Editor einfügen',
     insertLabel: (title: string) => `Beispiel «${title}» in den Editor einfügen`,
     additum: 'Additum',

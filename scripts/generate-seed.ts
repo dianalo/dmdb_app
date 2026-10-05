@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 export const GENERATOR_SEED = 20260921;
 
 /** Muss zu `version` in `src/seeds/index.ts` passen. */
-export const SEED_VERSION = 1;
+export const SEED_VERSION = 2;
 
 /** Spätestes Datum, das in den Daten vorkommt. */
 const HEUTE = '2025-09-20';
@@ -1118,9 +1118,9 @@ CREATE TABLE genre (
 );
 
 CREATE TABLE song_genre (
+  id       INTEGER PRIMARY KEY,
   song_id  INTEGER NOT NULL,
   genre_id INTEGER NOT NULL,
-  PRIMARY KEY (song_id, genre_id),
   FOREIGN KEY (song_id) REFERENCES song (id),
   FOREIGN KEY (genre_id) REFERENCES genre (id)
 );
@@ -1151,21 +1151,21 @@ CREATE TABLE playlist (
 );
 
 CREATE TABLE playlist_song (
+  id              INTEGER PRIMARY KEY,
   playlist_id     INTEGER NOT NULL,
   song_id         INTEGER NOT NULL,
   position        INTEGER NOT NULL,
   hinzugefuegt_am TEXT NOT NULL, -- ISO-Datum, z. B. '2023-04-17'
-  PRIMARY KEY (playlist_id, song_id),
   FOREIGN KEY (playlist_id) REFERENCES playlist (id),
   FOREIGN KEY (song_id) REFERENCES song (id)
 );
 
 CREATE TABLE bewertung (
+  id        INTEGER PRIMARY KEY,
   nutzer_id INTEGER NOT NULL,
   song_id   INTEGER NOT NULL,
   sterne    INTEGER NOT NULL CHECK (sterne BETWEEN 1 AND 5),
   datum     TEXT NOT NULL, -- ISO-Datum, z. B. '2023-04-17'
-  PRIMARY KEY (nutzer_id, song_id),
   FOREIGN KEY (nutzer_id) REFERENCES nutzer (id),
   FOREIGN KEY (song_id) REFERENCES song (id)
 );`;
@@ -1196,8 +1196,8 @@ export function buildInserts(d: Datensatz): string {
     ),
     insertBloecke(
       'song_genre',
-      ['song_id', 'genre_id'],
-      d.songGenre.map((sg) => [sg.songId, sg.genreId]),
+      ['id', 'song_id', 'genre_id'],
+      d.songGenre.map((sg, i) => [i + 1, sg.songId, sg.genreId]),
     ),
     insertBloecke(
       'nutzer',
@@ -1216,13 +1216,19 @@ export function buildInserts(d: Datensatz): string {
     ),
     insertBloecke(
       'playlist_song',
-      ['playlist_id', 'song_id', 'position', 'hinzugefuegt_am'],
-      d.playlistSong.map((ps) => [ps.playlistId, ps.songId, ps.position, ps.hinzugefuegtAm]),
+      ['id', 'playlist_id', 'song_id', 'position', 'hinzugefuegt_am'],
+      d.playlistSong.map((ps, i) => [
+        i + 1,
+        ps.playlistId,
+        ps.songId,
+        ps.position,
+        ps.hinzugefuegtAm,
+      ]),
     ),
     insertBloecke(
       'bewertung',
-      ['nutzer_id', 'song_id', 'sterne', 'datum'],
-      d.bewertung.map((b) => [b.nutzerId, b.songId, b.sterne, b.datum]),
+      ['id', 'nutzer_id', 'song_id', 'sterne', 'datum'],
+      d.bewertung.map((b, i) => [i + 1, b.nutzerId, b.songId, b.sterne, b.datum]),
     ),
   ];
   const namen = [
@@ -1244,7 +1250,7 @@ export function buildInserts(d: Datensatz): string {
 export function buildSeedSql(): string {
   const daten = generiereDaten(mulberry32(GENERATOR_SEED));
   const kopf = [
-    '-- Musik-Streaming, Beispieldatenbank der LPU «Datenmodellierung und Datenbanken»',
+    '-- k♪t Musik-Streaming, Beispieldatenbank der LPU «Datenmodellierung und Datenbanken»',
     `-- Generiert von scripts/generate-seed.ts (Seed ${GENERATOR_SEED}, Version ${SEED_VERSION}). Nicht von Hand editieren.`,
     '-- Streaming-Dienst «kanti♪tunes». Alle Künstler:innen, Titel und Personen sind frei erfunden.',
   ].join('\n');

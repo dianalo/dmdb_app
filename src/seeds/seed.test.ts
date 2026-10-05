@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import initSqlJs, { type Database } from 'sql.js';
 import { beforeAll, afterAll, describe, expect, it } from 'vitest';
-import { buildSeedSql } from '../../scripts/generate-seed';
+import { buildSeedSql, SEED_VERSION } from '../../scripts/generate-seed';
 import { BUILTIN_DB_ID_PREFIX, builtinDbId, builtinSeeds, musikStreaming } from './index';
 
 const SQL_DATEI = join(dirname(fileURLToPath(import.meta.url)), 'musik_streaming.sql');
@@ -34,22 +34,23 @@ afterAll(() => {
   db?.close();
 });
 
-describe('Seed «Musik-Streaming»', () => {
+describe('Seed «k♪t Musik-Streaming»', () => {
   it('ist identisch mit der Ausgabe des Generators', () => {
     expect(buildSeedSql()).toBe(sql);
   });
 
   it('trägt den vorgeschriebenen Kopfkommentar', () => {
-    expect(sql.startsWith('-- Musik-Streaming, Beispieldatenbank der LPU')).toBe(true);
+    expect(sql.startsWith('-- k♪t Musik-Streaming, Beispieldatenbank der LPU')).toBe(true);
     expect(sql).toContain('Nicht von Hand editieren.');
     expect(sql).toContain('kanti♪tunes');
     expect(sql).toContain('\nBEGIN;\n');
     expect(sql.trimEnd().endsWith('COMMIT;')).toBe(true);
   });
 
-  it('wird von der Registry als Version 1 angeboten', async () => {
+  it('wird von der Registry in der Version des Generators angeboten', async () => {
     expect(musikStreaming.id).toBe('musik-streaming');
-    expect(musikStreaming.version).toBe(1);
+    expect(musikStreaming.name).toBe('k♪t Musik-Streaming');
+    expect(musikStreaming.version).toBe(SEED_VERSION);
     expect(await musikStreaming.loadSql()).toBe(sql);
     expect(builtinSeeds).toEqual([musikStreaming]);
     expect(builtinDbId(musikStreaming)).toBe(`${BUILTIN_DB_ID_PREFIX}musik-streaming`);
@@ -71,17 +72,40 @@ describe('Integrität der Beispieldatenbank', () => {
     expect(spalten('album')).toEqual(['id', 'titel', 'erscheinungsjahr', 'kuenstler_id']);
     expect(spalten('song')).toEqual(['id', 'titel', 'dauer_sek', 'album_id']);
     expect(spalten('genre')).toEqual(['id', 'name']);
-    expect(spalten('song_genre')).toEqual(['song_id', 'genre_id']);
+    expect(spalten('song_genre')).toEqual(['id', 'song_id', 'genre_id']);
     expect(spalten('nutzer')).toEqual(['id', 'benutzername', 'email', 'land', 'registriert_am']);
     expect(spalten('abo')).toEqual(['id', 'typ', 'preis', 'gueltig_bis', 'nutzer_id']);
     expect(spalten('playlist')).toEqual(['id', 'name', 'erstellt_am', 'nutzer_id']);
     expect(spalten('playlist_song')).toEqual([
+      'id',
       'playlist_id',
       'song_id',
       'position',
       'hinzugefuegt_am',
     ]);
-    expect(spalten('bewertung')).toEqual(['nutzer_id', 'song_id', 'sterne', 'datum']);
+    expect(spalten('bewertung')).toEqual(['id', 'nutzer_id', 'song_id', 'sterne', 'datum']);
+  });
+
+  it('gibt jeder Tabelle genau eine Schlüsselspalte id (keine zusammengesetzten Schlüssel)', () => {
+    const tabellen = spalte("SELECT name FROM sqlite_master WHERE type = 'table'");
+    for (const tabelle of tabellen) {
+      expect(spalte(`SELECT name FROM pragma_table_info('${tabelle}') WHERE pk > 0`)).toEqual([
+        'id',
+      ]);
+    }
+  });
+
+  it('enthält jedes Paar in den Beziehungstabellen höchstens einmal', () => {
+    const paare: readonly (readonly [string, string, string])[] = [
+      ['song_genre', 'song_id', 'genre_id'],
+      ['playlist_song', 'playlist_id', 'song_id'],
+      ['bewertung', 'nutzer_id', 'song_id'],
+    ];
+    for (const [tabelle, a, b] of paare) {
+      expect(
+        zahl(`SELECT COUNT(*) FROM (SELECT ${a}, ${b} FROM ${tabelle} GROUP BY ${a}, ${b})`),
+      ).toBe(zahl(`SELECT COUNT(*) FROM ${tabelle}`));
+    }
   });
 
   it('legt alle zehn Tabellen an', () => {
@@ -120,13 +144,21 @@ describe('Umfang der Daten', () => {
     expect(zahl('SELECT COUNT(*) FROM bewertung')).toBeGreaterThanOrEqual(400);
   });
 
-  it.each(['kuenstler', 'album', 'song', 'genre', 'nutzer', 'abo', 'playlist'])(
-    '%s hat lückenlose ids ab 1',
-    (tabelle) => {
-      expect(zahl(`SELECT MIN(id) FROM ${tabelle}`)).toBe(1);
-      expect(zahl(`SELECT MAX(id) FROM ${tabelle}`)).toBe(zahl(`SELECT COUNT(*) FROM ${tabelle}`));
-    },
-  );
+  it.each([
+    'kuenstler',
+    'album',
+    'song',
+    'genre',
+    'song_genre',
+    'nutzer',
+    'abo',
+    'playlist',
+    'playlist_song',
+    'bewertung',
+  ])('%s hat lückenlose ids ab 1', (tabelle) => {
+    expect(zahl(`SELECT MIN(id) FROM ${tabelle}`)).toBe(1);
+    expect(zahl(`SELECT MAX(id) FROM ${tabelle}`)).toBe(zahl(`SELECT COUNT(*) FROM ${tabelle}`));
+  });
 });
 
 describe('Haken für die Aufgaben', () => {

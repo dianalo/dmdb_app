@@ -52,6 +52,17 @@ describe('persistence/migrate: reconcileSeeds', () => {
     await resetDmdbForTests();
   });
 
+  it('übernimmt einen neuen Anzeigenamen, auch bei einer veränderten Kopie', async () => {
+    await storeBuiltin({ modified: true }, 'CREATE TABLE eigene(x); -- verändert');
+    const renamed: Seed = { ...seedV2, name: 'k♪t Musik-Streaming' };
+    await reconcileSeeds([renamed], fakeBuilder(), idFor);
+
+    const meta = await getDatabaseMeta(ID);
+    expect(meta?.name).toBe('k♪t Musik-Streaming');
+    expect(meta?.seedOutdated).toBe(true);
+    expect(decode(await loadDatabaseBytes(ID))).toContain('verändert');
+  });
+
   it('kein Eintrag: baut die Datenbank aus dem Seed auf', async () => {
     const builder = fakeBuilder();
     const result = await reconcileSeeds([seedV1], builder, idFor);

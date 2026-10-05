@@ -128,6 +128,8 @@ Die App muss in Chrome, Safari, Firefox und Edge laufen und auf Tablets gut bedi
 
 **Dialog «Neue Datenbank»**: Name, grosser Editor für das DDL-Script (mit Beispiel-Platzhalter `CREATE TABLE …`), Button «Erstellen». Script wird in einer frischen DB ausgeführt; bei Fehler bleibt der Dialog offen und zeigt die übersetzte Fehlermeldung.
 
+**Zusatzdateien für das Skript**: `public/daten/podcast.sqlite` wird unverändert nach `https://dianalo.github.io/dmdb_app/daten/podcast.sqlite` ausgeliefert (Import-Aufgabe in Kapitel 3).
+
 **Sicherung (in v1 wegen Safari-Storage-Löschung, siehe Browser-Abschnitt)**: Scratch-Book herunterladen/öffnen als `.sql`, Datenbank herunterladen/importieren als `.sqlite` (die Bytes aus `db.export()` bzw. `new SQL.Database(bytes)`). Kein eigener Dialog, nur Menüeinträge.
 
 **Bewusst weggelassen in v1** (mögliche spätere Ausbaustufen): Dark Theme, Schema-Diagramm, Join-Visualisierung, GROUP-BY-Warnung (SQLite ist hier permissiv), CSV-Export von Resultaten, Query-Historie, Mehrsprachigkeit, Login, PWA/Offline-Installation.
@@ -215,7 +217,7 @@ Tests erzeugen die Originalmeldungen, indem sie das fehlerhafte SQL wirklich geg
 - Ausgabe `src/seeds/musik_streaming.sql` mit Kopfkommentar («generiert von scripts/generate-seed.ts, nicht von Hand editieren»), `BEGIN; … COMMIT;`, Multi-Row-INSERTs in 50er-Blöcken.
 - Umfang gemäss `datenmodell.md`: 18 kuenstler (2 mit `gruendungsjahr` NULL, 1 ohne Album für LEFT JOIN im Additum), 36 album, ca. 300 song (`dauer_sek` 95 bis 420), 9 genre, song_genre 1 bis 2 pro Song, 25 nutzer (`benutzername` und `email` eindeutig, Alternativschlüssel), ca. 20 abo (1:1 zu nutzer, `typ`, `preis` REAL, `gueltig_bis`; einige Nutzer:innen ohne Abo), 50 playlist (5 bis 25 Songs, `position` lückenlos ab 1, `hinzugefuegt_am >= erstellt_am`), ca. 600 bewertung (sterne 1 bis 5, Schwerpunkt 3 bis 5). Daten ISO `YYYY-MM-DD` als TEXT, Jahre INTEGER. Der Dienst heisst im Skript «kanti♪tunes».
 - Fiktive Namen aus Wortpools (deutsch/englisch/schweizerisch gemischt), einige Titel mit «Love»/«Liebe»/«Nacht» für LIKE-Aufgaben, wenige doppelte Songtitel über Alben hinweg für DISTINCT. Länder: Schweiz, Deutschland, Österreich, USA, UK, Frankreich, Italien.
-- DDL lesbar formatiert (wird verbatim im DDL-Tab angezeigt): `INTEGER PRIMARY KEY`, `TEXT`, `INTEGER`, `NOT NULL`, tabellenweite `FOREIGN KEY (…) REFERENCES …(…)` ohne `ON DELETE`, zusammengesetzte PKs für `song_genre`, `playlist_song`, `bewertung`; einzig `bewertung.sterne` mit `CHECK (sterne BETWEEN 1 AND 5)`. UNIQUE nur, wo das Modell Alternativschlüssel bzw. 1:1 vorgibt: `nutzer.benutzername`, `nutzer.email`, `abo.nutzer_id`. Keine STRICT-Tabellen.
+- DDL lesbar formatiert (wird verbatim im DDL-Tab angezeigt): `INTEGER PRIMARY KEY`, `TEXT`, `INTEGER`, `NOT NULL`, tabellenweite `FOREIGN KEY (…) REFERENCES …(…)` ohne `ON DELETE`, künstliche `id` als Primärschlüssel auch in `song_genre`, `playlist_song`, `bewertung` (wie im Skript, keine zusammengesetzten Schlüssel; Seed-Version 2); einzig `bewertung.sterne` mit `CHECK (sterne BETWEEN 1 AND 5)`. UNIQUE nur, wo das Modell Alternativschlüssel bzw. 1:1 vorgibt: `nutzer.benutzername`, `nutzer.email`, `abo.nutzer_id`. Keine STRICT-Tabellen.
 - Generator prüft referenzielle Integrität; der Seed-Test führt zusätzlich `PRAGMA foreign_key_check` aus.
 
 ## Projektstruktur

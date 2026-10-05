@@ -56,6 +56,9 @@ export async function reconcileSeeds(
       continue;
     }
 
+    // Anzeigename immer dem Seed folgen lassen, auch bei einer veränderten Kopie.
+    if (meta.name !== seed.name) await updateDatabaseMeta(id, { name: seed.name });
+
     const storedVersion = meta.seedVersion ?? 0;
 
     // Gleiche (oder neuere) Version: nichts tun. Fehlen die Bytes trotzdem

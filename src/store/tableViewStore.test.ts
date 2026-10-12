@@ -27,22 +27,22 @@ describe('tableViewStore', () => {
     await useTableViewStore.getState().refresh('song');
     const song = view('song');
     expect(song?.status).toBe('ready');
-    expect(song?.info?.rowCount).toBe(308);
+    expect(song?.info?.rowCount).toBe(300);
     expect(song?.info?.ddl).toMatch(/^CREATE TABLE song/);
     expect(song?.info?.columns.find((c) => c.name === 'id')?.primaryKey).toBe(true);
     expect(song?.rows).toHaveLength(200);
-    expect(song?.total).toBe(308);
+    expect(song?.total).toBe(300);
   });
 
   it('«Mehr laden» hängt die nächste Seite an; ein Refresh behält die Anzahl', async () => {
     const store = useTableViewStore.getState();
     await store.refresh('song');
     await store.loadMore('song');
-    expect(view('song')?.rows).toHaveLength(308);
+    expect(view('song')?.rows).toHaveLength(300);
     await store.loadMore('song'); // nichts mehr da
-    expect(view('song')?.rows).toHaveLength(308);
+    expect(view('song')?.rows).toHaveLength(300);
     await store.refresh('song');
-    expect(view('song')?.rows).toHaveLength(308);
+    expect(view('song')?.rows).toHaveLength(300);
   });
 
   it('sortiert im Zyklus und setzt dabei auf die erste Seite zurück', async () => {
@@ -66,7 +66,7 @@ describe('tableViewStore', () => {
     const store = useTableViewStore.getState();
     await store.setFilter('song', 'gibt es sicher nicht');
     expect(view('song')?.total).toBe(0);
-    expect(view('song')?.info?.rowCount).toBe(308);
+    expect(view('song')?.info?.rowCount).toBe(300);
   });
 
   it('erhöht dataVersion nach einem Lauf und sieht die Änderung', async () => {

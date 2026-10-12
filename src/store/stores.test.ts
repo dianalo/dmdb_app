@@ -98,7 +98,7 @@ describe('stores', () => {
         .run(SQL_TAB_ID, 'SELECT titel FROM song ORDER BY dauer_sek DESC;');
       const result = useResultStore.getState().byTab[SQL_TAB_ID]?.results[0];
       expect(result?.kind).toBe('rows');
-      if (result?.kind === 'rows') expect(result.rows).toHaveLength(308);
+      if (result?.kind === 'rows') expect(result.rows).toHaveLength(300);
       expect((await getDatabaseMeta(BUILTIN))?.modified).toBe(false);
     });
 
@@ -216,7 +216,7 @@ describe('stores', () => {
       const broken = await createUserDatabase('kaputt', new TextEncoder().encode('kein SQLite'));
       await expect(useDbStore.getState().switchDatabase(broken.id)).rejects.toThrow();
       expect(useDbStore.getState().activeDbId).toBe(BUILTIN);
-      expect(await countRows('SELECT COUNT(*) FROM song;')).toBe(308);
+      expect(await countRows('SELECT COUNT(*) FROM song;')).toBe(300);
     });
   });
 

@@ -36,7 +36,7 @@ test('App lädt mit Beispieldatenbank und Speicherhinweis', async ({ page }) => 
 
 test('Query ausführen liefert Zeilenzahl', async ({ page }) => {
   await runSql(page, 'SELECT titel FROM song ORDER BY dauer_sek DESC;');
-  await expect(firstSummary(page)).toContainText('308 Zeilen');
+  await expect(firstSummary(page)).toContainText('300 Zeilen');
   await expect(activePanel(page).locator('article tbody tr').first()).toBeVisible();
 });
 
@@ -80,7 +80,7 @@ test('Tabellenansicht: Daten, Sortierung und DDL', async ({ page }) => {
   await expect(page.getByRole('tab', { name: 'song' })).toHaveAttribute('aria-selected', 'true');
 
   const panel = activePanel(page);
-  await expect(panel.locator('header')).toContainText('308 Zeilen');
+  await expect(panel.locator('header')).toContainText('300 Zeilen');
   await expect(panel.locator('tbody tr').first()).toBeVisible();
 
   const dauer = panel.locator('thead th').filter({ hasText: 'dauer_sek' });

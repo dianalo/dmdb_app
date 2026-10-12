@@ -81,7 +81,7 @@ export async function runSql(page: Page, sql: string): Promise<void> {
   await clickRun(page);
 }
 
-/** Zusammenfassung des ersten Ausgabeblocks, z. B. «308 Zeilen». */
+/** Zusammenfassung des ersten Ausgabeblocks, z. B. «300 Zeilen». */
 export function firstSummary(page: Page): Locator {
   return activePanel(page).locator('article p').first();
 }

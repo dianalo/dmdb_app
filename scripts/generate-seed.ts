@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 export const GENERATOR_SEED = 20260921;
 
 /** Muss zu `version` in `src/seeds/index.ts` passen. */
-export const SEED_VERSION = 2;
+export const SEED_VERSION = 3;
 
 /** Spätestes Datum, das in den Daten vorkommt. */
 const HEUTE = '2025-09-20';
@@ -97,6 +97,24 @@ const LAENDER: readonly (readonly [string, number])[] = [
   ['UK', 10],
   ['Frankreich', 8],
   ['Italien', 7],
+];
+
+/**
+ * Singles ohne Album (`album_id` ist NULL), für Aufgaben mit `IS NULL` und
+ * LEFT JOIN. Feste Liste ohne Zufall und am Ende angehängt, damit alle übrigen
+ * Daten (und ihre ids) unverändert bleiben. Die Dauer liegt bewusst zwischen
+ * den Extremwerten, damit «längster/kürzester Song» gleich bleibt.
+ * Genre-Index bezieht sich auf GENRE_NAMEN (1 = Pop).
+ */
+export const SINGLES: readonly { titel: string; dauerSek: number; genreId: number }[] = [
+  { titel: 'Zwischenhalt', dauerSek: 198, genreId: 1 },
+  { titel: 'Föhnsturm', dauerSek: 241, genreId: 2 },
+  { titel: 'Letzte Fähre', dauerSek: 276, genreId: 7 },
+  { titel: 'Kopfhörer auf', dauerSek: 163, genreId: 3 },
+  { titel: 'Gleis 7', dauerSek: 214, genreId: 4 },
+  { titel: 'Am Seeufer', dauerSek: 309, genreId: 9 },
+  { titel: 'Aprilwetter', dauerSek: 187, genreId: 8 },
+  { titel: 'Sommerbahn', dauerSek: 232, genreId: 1 },
 ];
 
 const GENRE_NAMEN = [
@@ -421,7 +439,8 @@ export interface Song {
   id: number;
   titel: string;
   dauerSek: number;
-  albumId: number;
+  /** `null`: Single, die zu keinem Album gehört. */
+  albumId: number | null;
 }
 
 export interface Genre {
@@ -779,6 +798,13 @@ export function generiereDaten(rnd: Zufall = mulberry32(GENERATOR_SEED)): Datens
   }
   bewertung.sort((a, b) => a.nutzerId - b.nutzerId || a.songId - b.songId);
 
+  // --- Singles ohne Album (zuletzt, ohne Zufall: siehe SINGLES) -------------
+  for (const single of SINGLES) {
+    const id = song.length + 1;
+    song.push({ id, titel: single.titel, dauerSek: single.dauerSek, albumId: null });
+    songGenre.push({ songId: id, genreId: single.genreId });
+  }
+
   const daten: Datensatz = {
     kuenstler,
     album,
@@ -873,7 +899,7 @@ function pruefeDaten(d: Datensatz): void {
     'album.kuenstler_id ungültig',
   );
   pruefe(
-    d.song.every((s) => albumIds.has(s.albumId)),
+    d.song.every((s) => s.albumId === null || albumIds.has(s.albumId)),
     'song.album_id ungültig',
   );
   pruefe(
@@ -970,6 +996,10 @@ function pruefeDaten(d: Datensatz): void {
     'Playlist 1 hat nicht 25 Songs',
   );
   pruefe(
+    d.song.filter((s) => s.albumId === null).length === SINGLES.length,
+    'Singles ohne Album fehlen',
+  );
+  pruefe(
     d.song.filter((s) => s.albumId === ALBUM_MIT_12_SONGS).length === 12,
     'Album 1 hat nicht 12 Songs',
   );
@@ -977,6 +1007,7 @@ function pruefeDaten(d: Datensatz): void {
   pruefe(suchTitel.length >= 3, 'zu wenige Titel mit Nacht/Love/Liebe');
   const proTitel = new Map<string, Set<number>>();
   for (const s of d.song) {
+    if (s.albumId === null) continue;
     const alben = proTitel.get(s.titel) ?? new Set<number>();
     alben.add(s.albumId);
     proTitel.set(s.titel, alben);
@@ -1108,7 +1139,7 @@ CREATE TABLE song (
   id        INTEGER PRIMARY KEY,
   titel     TEXT NOT NULL,
   dauer_sek INTEGER NOT NULL,
-  album_id  INTEGER NOT NULL,
+  album_id  INTEGER, -- NULL: Single ohne Album
   FOREIGN KEY (album_id) REFERENCES album (id)
 );
 

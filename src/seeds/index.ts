@@ -16,11 +16,12 @@ export function builtinDbId(seed: Seed): string {
  *
  * `version` muss mit `SEED_VERSION` in `scripts/generate-seed.ts` übereinstimmen
  * (Test in `seed.test.ts`). Version 2: künstliche `id` in den Beziehungstabellen.
+ * Version 3: Singles ohne Album (`song.album_id` darf NULL sein).
  */
 export const musikStreaming: Seed = {
   id: 'musik-streaming',
   name: 'k♪t Musik-Streaming',
-  version: 2,
+  version: 3,
   // Eigener Chunk: wird nur geladen, wenn die Datenbank (neu) aufgebaut wird.
   loadSql: () => import('./musik_streaming.sql?raw').then((module) => module.default),
 };

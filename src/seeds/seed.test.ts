@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import initSqlJs, { type Database } from 'sql.js';
 import { beforeAll, afterAll, describe, expect, it } from 'vitest';
-import { buildSeedSql, SEED_VERSION } from '../../scripts/generate-seed';
+import { buildSeedSql, SEED_VERSION, SINGLES } from '../../scripts/generate-seed';
 import { BUILTIN_DB_ID_PREFIX, builtinDbId, builtinSeeds, musikStreaming } from './index';
 
 const SQL_DATEI = join(dirname(fileURLToPath(import.meta.url)), 'musik_streaming.sql');
@@ -158,6 +158,42 @@ describe('Umfang der Daten', () => {
   ])('%s hat lückenlose ids ab 1', (tabelle) => {
     expect(zahl(`SELECT MIN(id) FROM ${tabelle}`)).toBe(1);
     expect(zahl(`SELECT MAX(id) FROM ${tabelle}`)).toBe(zahl(`SELECT COUNT(*) FROM ${tabelle}`));
+  });
+});
+
+describe('Singles ohne Album (album_id ist NULL)', () => {
+  it('erlaubt NULL in song.album_id', () => {
+    expect(zahl("SELECT \"notnull\" FROM pragma_table_info('song') WHERE name = 'album_id'")).toBe(
+      0,
+    );
+  });
+
+  it('hängt die Singles mit den ids 301 bis 308 hinten an', () => {
+    expect(SINGLES).toHaveLength(8);
+    expect(spalte('SELECT id FROM song WHERE album_id IS NULL ORDER BY id')).toEqual([
+      301, 302, 303, 304, 305, 306, 307, 308,
+    ]);
+    expect(zahl('SELECT COUNT(*) FROM song WHERE album_id IS NOT NULL')).toBe(300);
+  });
+
+  it('gibt jeder Single ein Genre', () => {
+    expect(
+      zahl(
+        'SELECT COUNT(DISTINCT sg.song_id) FROM song_genre sg JOIN song s ON s.id = sg.song_id WHERE s.album_id IS NULL',
+      ),
+    ).toBe(8);
+  });
+
+  it('ändert längsten und kürzesten Song nicht', () => {
+    expect(spalte('SELECT titel FROM song ORDER BY dauer_sek DESC, id LIMIT 1')).toEqual([
+      'Morgen in Winterthur',
+    ]);
+    expect(zahl('SELECT MAX(dauer_sek) FROM song WHERE album_id IS NULL')).toBeLessThan(
+      zahl('SELECT MAX(dauer_sek) FROM song WHERE album_id IS NOT NULL'),
+    );
+    expect(zahl('SELECT MIN(dauer_sek) FROM song WHERE album_id IS NULL')).toBeGreaterThan(
+      zahl('SELECT MIN(dauer_sek) FROM song WHERE album_id IS NOT NULL'),
+    );
   });
 });
 

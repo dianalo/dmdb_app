@@ -1,5 +1,5 @@
 -- k♪t Musik-Streaming, Beispieldatenbank der LPU «Datenmodellierung und Datenbanken»
--- Generiert von scripts/generate-seed.ts (Seed 20260921, Version 2). Nicht von Hand editieren.
+-- Generiert von scripts/generate-seed.ts (Seed 20260921, Version 3). Nicht von Hand editieren.
 -- Streaming-Dienst «kanti♪tunes». Alle Künstler:innen, Titel und Personen sind frei erfunden.
 
 CREATE TABLE kuenstler (
@@ -21,7 +21,7 @@ CREATE TABLE song (
   id        INTEGER PRIMARY KEY,
   titel     TEXT NOT NULL,
   dauer_sek INTEGER NOT NULL,
-  album_id  INTEGER NOT NULL,
+  album_id  INTEGER, -- NULL: Single ohne Album
   FOREIGN KEY (album_id) REFERENCES album (id)
 );
 
@@ -457,6 +457,16 @@ INSERT INTO song (id, titel, dauer_sek, album_id) VALUES
   (298, 'Uferwind', 162, 36),
   (299, 'Zug in Winterthur', 113, 36),
   (300, 'Hafen in Lyon', 169, 36);
+
+INSERT INTO song (id, titel, dauer_sek, album_id) VALUES
+  (301, 'Zwischenhalt', 198, NULL),
+  (302, 'Föhnsturm', 241, NULL),
+  (303, 'Letzte Fähre', 276, NULL),
+  (304, 'Kopfhörer auf', 163, NULL),
+  (305, 'Gleis 7', 214, NULL),
+  (306, 'Am Seeufer', 309, NULL),
+  (307, 'Aprilwetter', 187, NULL),
+  (308, 'Sommerbahn', 232, NULL);
 
 -- genre
 INSERT INTO genre (id, name) VALUES
@@ -928,7 +938,15 @@ INSERT INTO song_genre (id, song_id, genre_id) VALUES
   (438, 298, 6),
   (439, 299, 8),
   (440, 299, 3),
-  (441, 300, 3);
+  (441, 300, 3),
+  (442, 301, 1),
+  (443, 302, 2),
+  (444, 303, 7),
+  (445, 304, 3),
+  (446, 305, 4),
+  (447, 306, 9),
+  (448, 307, 8),
+  (449, 308, 1);
 
 -- nutzer
 INSERT INTO nutzer (id, benutzername, email, land, registriert_am) VALUES

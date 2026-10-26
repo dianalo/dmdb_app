@@ -247,7 +247,6 @@ describe('Abo (1:1 zu nutzer)', () => {
     ).toBe(0);
     expect(spalte('SELECT DISTINCT typ FROM abo ORDER BY typ')).toEqual([
       'Basic',
-      'Familie',
       'Premium',
       'Student',
     ]);

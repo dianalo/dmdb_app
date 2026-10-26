@@ -1,5 +1,5 @@
 -- k♪t Musik-Streaming, Beispieldatenbank der LPU «Datenmodellierung und Datenbanken»
--- Generiert von scripts/generate-seed.ts (Seed 20260921, Version 4). Nicht von Hand editieren.
+-- Generiert von scripts/generate-seed.ts (Seed 20260921, Version 5). Nicht von Hand editieren.
 -- Streaming-Dienst «kanti♪tunes». Alle Künstler:innen, Titel und Personen sind frei erfunden.
 
 CREATE TABLE kuenstler (
@@ -960,19 +960,19 @@ INSERT INTO nutzer (id, benutzername, email, land, registriert_am) VALUES
 
 -- abo
 INSERT INTO abo (id, typ, preis, gueltig_bis, nutzer_id) VALUES
-  (1, 'Premium', 12.90, '2027-11-01', 1),
+  (1, 'Basic', 9.90, '2027-11-01', 1),
   (2, 'Basic', 9.90, '2027-09-06', 3),
   (3, 'Student', 5.90, '2025-07-31', 4),
   (4, 'Basic', 9.90, '2027-07-18', 5),
   (5, 'Basic', 9.90, '2027-06-08', 6),
   (6, 'Student', 5.90, '2027-06-03', 7),
-  (7, 'Familie', 19.90, '2027-10-11', 8),
+  (7, 'Premium', 12.90, '2027-10-11', 8),
   (8, 'Premium', 12.90, '2027-07-02', 10),
-  (9, 'Premium', 12.90, '2027-11-19', 12),
+  (9, 'Basic', 9.90, '2027-11-19', 12),
   (10, 'Premium', 12.90, '2025-11-09', 13),
   (11, 'Student', 5.90, '2027-07-23', 14),
-  (12, 'Familie', 19.90, '2027-11-19', 15),
-  (13, 'Familie', 19.90, '2026-10-07', 16),
+  (12, 'Student', 5.90, '2027-11-19', 15),
+  (13, 'Student', 5.90, '2026-10-07', 16),
   (14, 'Basic', 9.90, '2027-08-26', 17),
   (15, 'Student', 5.90, '2027-03-31', 18),
   (16, 'Basic', 9.90, '2027-11-07', 20),

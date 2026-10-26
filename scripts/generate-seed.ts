@@ -17,7 +17,7 @@ import { fileURLToPath } from 'node:url';
 export const GENERATOR_SEED = 20260921;
 
 /** Muss zu `version` in `src/seeds/index.ts` passen. */
-export const SEED_VERSION = 4;
+export const SEED_VERSION = 5;
 
 /** Spätestes Datum, das in den Daten vorkommt. */
 const HEUTE = '2025-09-20';
@@ -351,12 +351,12 @@ const HANDLE_ANHANG = [
 
 const MAIL_DOMAINS = ['example.ch', 'example.com', 'example.de', 'mail.example.ch'] as const;
 
-/** Abo-Typen mit festem Preis (pro Typ genau ein Preis). */
+/** Abo-Typen mit festem Preis (pro Typ genau ein Preis). Nur Einzelabos: ein
+ * Familienabo bräuchte eine Zuordnung mehrerer Nutzer:innen zu einem Abo. */
 const ABO_TYPEN: readonly (readonly [string, number, number])[] = [
   // [typ, preis, gewicht]
   ['Basic', 9.9, 35],
   ['Premium', 12.9, 30],
-  ['Familie', 19.9, 15],
   ['Student', 5.9, 20],
 ];
 

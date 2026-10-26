@@ -18,11 +18,12 @@ export function builtinDbId(seed: Seed): string {
  * (Test in `seed.test.ts`). Version 2: künstliche `id` in den Beziehungstabellen.
  * Version 3 (Singles ohne Album) wurde zurückgenommen; Version 4 hat wieder den
  * Datenstand von Version 2, damit Browser mit Version 3 neu aufbauen.
+ * Version 5: ohne Abo-Typ «Familie» (nur Einzelabos).
  */
 export const musikStreaming: Seed = {
   id: 'musik-streaming',
   name: 'k♪t Musik-Streaming',
-  version: 4,
+  version: 5,
   // Eigener Chunk: wird nur geladen, wenn die Datenbank (neu) aufgebaut wird.
   loadSql: () => import('./musik_streaming.sql?raw').then((module) => module.default),
 };

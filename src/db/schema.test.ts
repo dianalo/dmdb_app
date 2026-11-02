@@ -3,6 +3,7 @@ import type { Database } from 'sql.js';
 import {
   columnNames,
   errorContext,
+  formatDdl,
   listTables,
   quoteIdent,
   rowCount,
@@ -80,9 +81,47 @@ describe('tableInfo', () => {
     expect(ddl.split('\n').length).toBeGreaterThan(1);
   });
 
+  it('zeigt mit ALTER TABLE hinzugefügte Spalten auf eigenen Zeilen', () => {
+    db.run(`CREATE TABLE t (
+  id INTEGER PRIMARY KEY,
+  name TEXT,
+  FOREIGN KEY (id) REFERENCES t(id)
+)`);
+    db.run('ALTER TABLE t ADD COLUMN x INTEGER');
+    db.run("ALTER TABLE t ADD COLUMN y TEXT DEFAULT 'a, b'");
+    expect(tableDdl(db, 't')).toBe(`CREATE TABLE t (
+  id INTEGER PRIMARY KEY,
+  name TEXT,
+  x INTEGER,
+  y TEXT DEFAULT 'a, b',
+  FOREIGN KEY (id) REFERENCES t(id)
+)`);
+  });
+
   it('meldet eine unbekannte Tabelle in der Sprache von SQLite', () => {
     expect(() => tableInfo(db, 'nixda')).toThrow('no such table: nixda');
     expect(tableDdl(db, 'nixda')).toBe('');
+  });
+});
+
+describe('formatDdl', () => {
+  it('lässt einzeilige DDL unverändert', () => {
+    const ddl = 'CREATE TABLE t (a INT, b INT)';
+    expect(formatDdl(ddl)).toBe(ddl);
+  });
+
+  it('bricht nicht in Klammern, Strings, Bezeichnern und Kommentaren um', () => {
+    const ddl = `CREATE TABLE t (
+  a NUMERIC(10, 2) CHECK (a IN (1, 2)), -- eins, zwei
+  "b, c" TEXT DEFAULT 'x, y' /* d, e */
+)`;
+    expect(formatDdl(ddl)).toBe(ddl);
+  });
+
+  it('übernimmt die Einrückung der Zeile', () => {
+    expect(formatDdl('CREATE TABLE t (\n    a INT, b INT\n)')).toBe(
+      'CREATE TABLE t (\n    a INT,\n    b INT\n)',
+    );
   });
 });
 

@@ -61,7 +61,10 @@ export function rowCount(db: Database, name: string): number {
   return typeof value === 'number' ? value : 0;
 }
 
-/** Das `CREATE TABLE`-Statement aus `sqlite_master`, verbatim für den DDL-Tab. */
+/**
+ * Das `CREATE TABLE`-Statement aus `sqlite_master` für den DDL-Tab, verbatim bis auf
+ * {@link formatDdl}.
+ */
 export function tableDdl(db: Database, name: string): string {
   const stmt = db.prepare("SELECT sql FROM sqlite_master WHERE type = 'table' AND name = ?", [
     name,
@@ -69,10 +72,74 @@ export function tableDdl(db: Database, name: string): string {
   try {
     if (!stmt.step()) return '';
     const value = stmt.get()[0];
-    return typeof value === 'string' ? value : '';
+    return typeof value === 'string' ? formatDdl(value) : '';
   } finally {
     stmt.free();
   }
+}
+
+/**
+ * Bricht bei mehrzeiliger DDL nach jedem Komma zwischen zwei Spalten-/Constraint-Definitionen
+ * um, auf das noch etwas auf derselben Zeile folgt. `ALTER TABLE … ADD COLUMN` hängt neue
+ * Spalten nämlich als `, <spalte>` an die Zeile der bisher letzten Spalte an. Einzeilige DDL
+ * bleibt unverändert, ebenso Kommas in Strings, Kommentaren und Klammern (z. B. `CHECK (…)`).
+ */
+export function formatDdl(ddl: string): string {
+  const open = ddl.indexOf('(');
+  if (open < 0 || !ddl.includes('\n', open)) return ddl;
+
+  let out = '';
+  let depth = 0;
+  let i = 0;
+  while (i < ddl.length) {
+    const ch = ddl[i]!;
+    const end = skipLiteral(ddl, i);
+    if (end > i) {
+      out += ddl.slice(i, end);
+      i = end;
+      continue;
+    }
+    if (ch === '(') depth++;
+    else if (ch === ')') depth--;
+    out += ch;
+    i++;
+    if (ch !== ',' || depth !== 1) continue;
+
+    // Folgt nach dem Komma nur noch Leerraum oder ein Zeilenkommentar, ist nichts zu tun.
+    let next = i;
+    while (ddl[next] === ' ' || ddl[next] === '\t') next++;
+    if (next >= ddl.length || /[\r\n]/.test(ddl[next]!) || ddl.startsWith('--', next)) continue;
+
+    const lineStart = out.lastIndexOf('\n') + 1;
+    const indent = lineStart === 0 ? '  ' : /^[ \t]*/.exec(out.slice(lineStart))![0];
+    out += '\n' + indent;
+    i = next;
+  }
+  return out;
+}
+
+/** Ende eines Strings, quotierten Bezeichners oder Kommentars ab `start`, sonst `start`. */
+function skipLiteral(sql: string, start: number): number {
+  const ch = sql[start];
+  if (sql.startsWith('--', start)) {
+    const end = sql.indexOf('\n', start);
+    return end < 0 ? sql.length : end;
+  }
+  if (sql.startsWith('/*', start)) {
+    const end = sql.indexOf('*/', start + 2);
+    return end < 0 ? sql.length : end + 2;
+  }
+  const close = ch === "'" || ch === '"' || ch === '`' ? ch : ch === '[' ? ']' : null;
+  if (close === null) return start;
+  let i = start + 1;
+  while (i < sql.length) {
+    if (sql[i] === close) {
+      if (close !== ']' && sql[i + 1] === close)
+        i += 2; // verdoppeltes Anführungszeichen
+      else return i + 1;
+    } else i++;
+  }
+  return sql.length;
 }
 
 /** Tabellen- und Spaltennamen für die Vorschläge der Fehlerübersetzung. */

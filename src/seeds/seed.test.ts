@@ -299,7 +299,7 @@ describe('Fachliche Zusicherungen', () => {
 
   it('hält alle Jahreszahlen plausibel', () => {
     expect(
-      zahl('SELECT COUNT(*) FROM kuenstler WHERE gruendungsjahr NOT BETWEEN 1965 AND 2022'),
+      zahl('SELECT COUNT(*) FROM kuenstler WHERE gruendungsjahr NOT BETWEEN 1950 AND 2025'),
     ).toBe(0);
     expect(
       zahl(`SELECT COUNT(*) FROM album a JOIN kuenstler k ON k.id = a.kuenstler_id

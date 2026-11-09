@@ -21,11 +21,12 @@ export function builtinDbId(seed: Seed): string {
  * Version 5: ohne Abo-Typ «Familie» (nur Einzelabos).
  * Version 6: echte Künstler:innen, Alben und Songs statt erfundener.
  * Version 7: `playlist_song.playlist_id` mit `ON DELETE CASCADE` (Aufgabe in Kapitel 7).
+ * Version 8: Auswahl ohne «explicit»-Songs und heikle Titel.
  */
 export const musikStreaming: Seed = {
   id: 'musik-streaming',
   name: 'k♪t Musik-Streaming',
-  version: 7,
+  version: 8,
   // Eigener Chunk: wird nur geladen, wenn die Datenbank (neu) aufgebaut wird.
   loadSql: () => import('./musik_streaming.sql?raw').then((module) => module.default),
 };

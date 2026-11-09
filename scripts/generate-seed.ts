@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 export const GENERATOR_SEED = 20260921;
 
 /** Muss zu `version` in `src/seeds/index.ts` passen. */
-export const SEED_VERSION = 7;
+export const SEED_VERSION = 8;
 
 /** Spätestes Datum, das in den Daten vorkommt. */
 const HEUTE = '2025-09-20';
@@ -99,17 +99,21 @@ function datumZwischen(rnd: Zufall, von: string, bis: string): string {
  * diesen Quellen. Pro Album steht nur eine Auswahl der Songs im Katalog,
  * ausser bei «I Put a Spell on You» (alle 12 Songs, für COUNT/HAVING).
  *
+ * Auswahl für den Unterricht: keine Songs, die bei Apple Music als «explicit»
+ * markiert sind, und keine Titel oder Texte rund um Drogen, Sex oder Gewalt.
+ *
  * gruendungsjahr: Bands mit Gründungsjahr, Solo-Artists NULL. Ebenfalls NULL
  * ist das Duo Lo & Leduc (kein festes Gründungsjahr belegt).
  *
  * Bewusste Konstellationen für die Aufgaben:
  * - Nemo hat kein Album (LEFT JOIN).
  * - «Bohemian Rhapsody» und «We Will Rock You» stehen auf einem Studioalbum und
- *   auf «Greatest Hits», «Somebody to Love» bei Queen und Conchita Wurst
- *   (gleicher Titel in mehreren Alben, DISTINCT).
+ *   auf «Greatest Hits», «Somebody to Love» bei Queen und Conchita Wurst,
+ *   «I Miss You» bei Adele und Beyoncé (gleicher Titel in mehreren Alben,
+ *   DISTINCT).
  * - Titel mit «Nacht», «Love» oder «Liebe» (LIKE); «In diesen Nächten» findet
  *   LIKE '%nacht%' nicht.
- * - Album «Beyoncé» heisst wie die Künstlerin, «Vögu zum Geburtstag» und
+ * - Album «Dua Lipa» heisst wie die Künstlerin, «Vögu zum Geburtstag» und
  *   «Bittersüessi Pille» wie je ein Song darauf.
  */
 
@@ -159,11 +163,13 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ['Fearless', '4:01'],
           ['Fifteen', '4:54'],
           ['Love Story', '3:55'],
+          ['Hey Stephen', '4:14'],
           ['White Horse', '3:54', ['Pop', 'Folk']],
           ['You Belong with Me', '3:51'],
           ['Breathe', '4:23'],
           ["You're Not Sorry", '4:21'],
           ['Forever & Always', '3:45'],
+          ['The Best Day', '4:05'],
           ['Change', '4:40'],
         ],
       },
@@ -176,9 +182,11 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ['Blank Space', '3:51'],
           ['Style', '3:51', ['Pop', 'Elektro']],
           ['Out of the Woods', '3:55'],
+          ['All You Had to Do Was Stay', '3:13'],
           ['Shake It Off', '3:39'],
           ['Bad Blood', '3:31', ['Pop', 'Hip-Hop']],
           ['Wildest Dreams', '3:40'],
+          ['How You Get the Girl', '4:07'],
           ['This Love', '4:10'],
           ['Clean', '4:30'],
         ],
@@ -198,8 +206,10 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ['Rolling in the Deep', '3:49'],
           ['Rumour Has It', '3:43'],
           ['Turning Tables', '4:10'],
+          ["Don't You Remember", '4:03'],
           ['Set Fire to the Rain', '4:01'],
           ["He Won't Go", '4:37'],
+          ['Take It All', '3:48'],
           ['One and Only', '5:48'],
           ['Lovesong', '5:16'],
           ['Someone like You', '4:47'],
@@ -212,11 +222,14 @@ const KATALOG: readonly KatalogKuenstler[] = [
         songs: [
           ['Hello', '4:55'],
           ['Send My Love (To Your New Lover)', '3:43'],
+          ['I Miss You', '5:48'],
           ['When We Were Young', '4:51'],
           ['Remedy', '4:05'],
           ['Water Under the Bridge', '4:00'],
           ['Love in the Dark', '4:46'],
+          ['Million Years Ago', '3:46'],
           ['All I Ask', '4:32'],
+          ['Sweetest Devotion', '4:12'],
         ],
       },
     ],
@@ -231,13 +244,13 @@ const KATALOG: readonly KatalogKuenstler[] = [
         jahr: 1975,
         genres: ['Rock'],
         songs: [
-          ['Death on Two Legs', '3:43'],
           ["I'm in Love with My Car", '3:05'],
           ["You're My Best Friend", '2:50', ['Rock', 'Pop']],
           ["'39", '3:30'],
           ['Seaside Rendezvous', '2:13'],
           ['Love of My Life', '3:38'],
           ['Good Company', '3:26'],
+          ['Sweet Lady', '4:01'],
           ['Bohemian Rhapsody', '5:55'],
         ],
       },
@@ -250,7 +263,7 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ['We Are the Champions', '2:59'],
           ['Sheer Heart Attack', '3:26', ['Rock', 'Punk']],
           ['Spread Your Wings', '4:34'],
-          ['Get Down, Make Love', '3:51'],
+          ['Who Needs You', '3:05'],
           ["It's Late", '6:26'],
           ['My Melancholy Blues', '3:29', ['Rock', 'Jazz']],
         ],
@@ -262,11 +275,11 @@ const KATALOG: readonly KatalogKuenstler[] = [
         songs: [
           ['Bohemian Rhapsody', '5:57'],
           ['Another One Bites the Dust', '3:36', ['Rock', 'Pop']],
-          ['Killer Queen', '2:57'],
-          ['Bicycle Race', '3:01'],
           ["Don't Stop Me Now", '3:29', ['Rock', 'Pop']],
           ['Crazy Little Thing Called Love', '2:42'],
+          ['Save Me', '3:48'],
           ['Somebody to Love', '4:56'],
+          ['Play the Game', '3:33'],
           ['We Will Rock You', '2:01'],
           ['We Are the Champions', '3:00'],
         ],
@@ -286,8 +299,11 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ["A Hard Day's Night", '2:34'],
           ['I Should Have Known Better', '2:43'],
           ['If I Fell', '2:19'],
+          ["I'm Happy Just to Dance with You", '1:56'],
           ['And I Love Her', '2:30'],
+          ['Tell Me Why', '2:09'],
           ["Can't Buy Me Love", '2:12'],
+          ['Any Time at All', '2:11'],
           ['Things We Said Today', '2:35'],
           ["I'll Be Back", '2:24'],
         ],
@@ -300,8 +316,11 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ['Help!', '2:18'],
           ['The Night Before', '2:34'],
           ["You've Got to Hide Your Love Away", '2:09', ['Pop', 'Folk']],
+          ['I Need You', '2:28'],
+          ['Another Girl', '2:05'],
           ['Ticket to Ride', '3:09'],
           ['Act Naturally', '2:30'],
+          ['Tell Me What You See', '2:37'],
           ["I've Just Seen a Face", '2:05'],
           ['Yesterday', '2:05', ['Pop']],
         ],
@@ -387,40 +406,39 @@ const KATALOG: readonly KatalogKuenstler[] = [
     ],
   },
   {
-    name: 'Kendrick Lamar',
-    land: 'USA',
+    name: 'Dua Lipa',
+    land: 'UK',
     gruendungsjahr: null,
     alben: [
       {
-        titel: 'To Pimp a Butterfly',
-        jahr: 2015,
-        genres: ['Hip-Hop'],
+        titel: 'Dua Lipa',
+        jahr: 2017,
+        genres: ['Pop'],
         songs: [
-          ["Wesley's Theory", '4:47'],
-          ['King Kunta', '3:54'],
-          ['Institutionalized', '4:31'],
-          ['These Walls', '5:00', ['Hip-Hop', 'Soul']],
-          ['Alright', '3:39', ['Hip-Hop', 'Jazz']],
-          ['Momma', '4:43'],
-          ['Hood Politics', '4:52'],
-          ['The Blacker the Berry', '5:28'],
-          ['I', '5:36'],
+          ['Genesis', '3:25'],
+          ['Lost in Your Light', '3:23'],
+          ['Be the One', '3:22'],
+          ['Garden', '3:47'],
+          ['No Goodbyes', '3:36'],
+          ["Thinking 'Bout You", '2:51'],
+          ['New Rules', '3:29', ['Pop', 'Elektro']],
+          ['Begging', '3:14'],
+          ['Homesick', '3:50'],
         ],
       },
       {
-        titel: 'Damn',
-        jahr: 2017,
-        genres: ['Hip-Hop'],
+        titel: 'Future Nostalgia',
+        jahr: 2020,
+        genres: ['Pop', 'Elektro'],
         songs: [
-          ['DNA', '3:05'],
-          ['Yah', '2:40'],
-          ['Element', '3:28'],
-          ['Loyalty', '3:47'],
-          ['Pride', '4:35'],
-          ['Humble', '2:57'],
-          ['Love', '3:33', ['Hip-Hop', 'Pop']],
-          ['XXX', '4:14'],
-          ['Duckworth', '4:08'],
+          ['Future Nostalgia', '3:04'],
+          ["Don't Start Now", '3:03'],
+          ['Cool', '3:29'],
+          ['Physical', '3:13'],
+          ['Levitating', '3:23'],
+          ['Love Again', '4:18'],
+          ['Break My Heart', '3:41'],
+          ['Boys Will Be Boys', '2:46', ['Pop']],
         ],
       },
     ],
@@ -436,30 +454,12 @@ const KATALOG: readonly KatalogKuenstler[] = [
         genres: ['Pop'],
         songs: [
           ['Bad Guy', '3:14', ['Pop', 'Elektro']],
-          ['Xanny', '4:04'],
           ['You Should See Me in a Crown', '3:01', ['Pop', 'Elektro']],
-          ['All the Good Girls Go to Hell', '2:49'],
           ["When the Party's Over", '3:16'],
-          ['Bury a Friend', '3:13', ['Pop', 'Elektro']],
+          ['8', '2:53'],
           ['Ilomilo', '2:36'],
           ['I Love You', '4:52'],
-          ['Listen Before I Go', '4:03'],
           ['Goodbye', '1:59'],
-        ],
-      },
-      {
-        titel: 'Happier Than Ever',
-        jahr: 2021,
-        genres: ['Pop'],
-        songs: [
-          ['Getting Older', '4:04'],
-          ['My Future', '3:30', ['Pop', 'Jazz']],
-          ['Oxytocin', '3:30', ['Pop', 'Elektro']],
-          ['Lost Cause', '3:32'],
-          ['Your Power', '4:05', ['Pop', 'Folk']],
-          ['NDA', '3:15'],
-          ['Therefore I Am', '2:53'],
-          ['Happier Than Ever', '4:58', ['Pop', 'Rock']],
         ],
       },
       {
@@ -467,8 +467,6 @@ const KATALOG: readonly KatalogKuenstler[] = [
         jahr: 2024,
         genres: ['Pop'],
         songs: [
-          ['Skinny', '3:39'],
-          ['Lunch', '3:00'],
           ['Chihiro', '5:03', ['Pop', 'Elektro']],
           ['Birds of a Feather', '3:30'],
           ['Wildflower', '4:21'],
@@ -513,6 +511,8 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ['Instant Crush', '5:37', ['Elektro', 'Pop']],
           ['Lose Yourself to Dance', '5:53', ['Elektro', 'Soul']],
           ['Get Lucky', '6:09', ['Elektro', 'Pop']],
+          ['Beyond', '4:50'],
+          ['Motherboard', '5:41'],
           ['Fragments of Time', '4:39'],
           ["Doin' It Right", '4:11'],
         ],
@@ -616,6 +616,19 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ['Spiegelbild', '3:50', ['Folk', 'Mundart']],
         ],
       },
+      {
+        titel: '1983',
+        jahr: 2010,
+        genres: ['Folk', 'Rock'],
+        songs: [
+          ['Leave Me With the Monkeys', '2:57'],
+          ['Lovesong to Everyone', '3:11', ['Folk']],
+          ['1983', '2:50'],
+          ['Headlights', '3:08'],
+          ['Citylights Forever', '3:26'],
+          ['Le vent nous portera', '3:46', ['Folk']],
+        ],
+      },
     ],
   },
   {
@@ -650,7 +663,9 @@ const KATALOG: readonly KatalogKuenstler[] = [
           ['Cuba Bar', '3:58'],
           ['Im erschte Tram', '3:24'],
           ['Risotto', '3:39'],
+          ['Zügumaa', '3:39'],
           ['Tupac', '3:27', ['Mundart', 'Hip-Hop']],
+          ['Mis Läbe lang', '3:00'],
           ['Maradona', '3:51'],
         ],
       },
@@ -684,10 +699,8 @@ const KATALOG: readonly KatalogKuenstler[] = [
         songs: [
           ['Punk ist …', '3:42'],
           ['Ein Lied für dich', '2:43'],
-          ['Goldenes Handwerk', '3:38'],
           ['½ Lovesong', '3:55', ['Rock']],
           ['Rebell', '3:54'],
-          ['Männer sind Schweine', '4:18'],
           ['Liebe und Schmerz', '3:54'],
           ['Nie gesagt', '5:00', ['Rock']],
           ['Grotesksong', '3:52'],
@@ -701,34 +714,19 @@ const KATALOG: readonly KatalogKuenstler[] = [
     gruendungsjahr: null,
     alben: [
       {
-        titel: 'Beyoncé',
-        jahr: 2013,
+        titel: '4',
+        jahr: 2011,
         genres: ['Pop', 'Soul'],
         songs: [
-          ['Pretty Hurts', '4:17', ['Pop']],
-          ['Haunted', '6:09', ['Pop', 'Elektro']],
-          ['Drunk in Love', '5:23', ['Soul', 'Hip-Hop']],
-          ['Partition', '5:19', ['Pop', 'Hip-Hop']],
-          ['Jealous', '3:04'],
-          ['XO', '3:35', ['Pop']],
-          ['Flawless', '4:10', ['Hip-Hop', 'Pop']],
-          ['Heaven', '3:50'],
-        ],
-      },
-      {
-        titel: 'Lemonade',
-        jahr: 2016,
-        genres: ['Pop', 'Soul'],
-        songs: [
-          ['Pray You Catch Me', '3:16'],
-          ['Hold Up', '3:41', ['Pop']],
-          ["Don't Hurt Yourself", '3:53', ['Rock', 'Soul']],
-          ['Sorry', '3:52', ['Pop']],
-          ['Daddy Lessons', '4:48', ['Folk', 'Pop']],
-          ['Love Drought', '3:57'],
-          ['Sandcastles', '3:02', ['Soul']],
-          ['Freedom', '4:49', ['Soul', 'Hip-Hop']],
-          ['Formation', '3:26', ['Hip-Hop', 'Pop']],
+          ['I Care', '3:59'],
+          ['I Miss You', '2:59'],
+          ['Best Thing I Never Had', '4:13', ['Pop']],
+          ['Start Over', '3:19'],
+          ['Love On Top', '4:27'],
+          ['Countdown', '3:32', ['Pop', 'Hip-Hop']],
+          ['End of Time', '3:43', ['Pop']],
+          ['I Was Here', '3:59'],
+          ['Run the World (Girls)', '3:56', ['Pop', 'Elektro']],
         ],
       },
     ],
@@ -816,11 +814,10 @@ const KATALOG: readonly KatalogKuenstler[] = [
         genres: ['Folk'],
         songs: [
           ['Creuza de mä', '6:16'],
-          ['Jamín-a', '4:52'],
           ['Sidún', '6:25'],
           ['Sinàn Capudàn Pascià', '5:32'],
           ['A pittima', '3:43'],
-          ['A dumenega', '3:40'],
+          ['Da a me riva', '3:01'],
         ],
       },
     ],

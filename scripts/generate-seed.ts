@@ -20,7 +20,7 @@ import { fileURLToPath } from 'node:url';
 export const GENERATOR_SEED = 20260921;
 
 /** Muss zu `version` in `src/seeds/index.ts` passen. */
-export const SEED_VERSION = 6;
+export const SEED_VERSION = 7;
 
 /** Spätestes Datum, das in den Daten vorkommt. */
 const HEUTE = '2025-09-20';
@@ -1596,7 +1596,7 @@ CREATE TABLE playlist_song (
   song_id         INTEGER NOT NULL,
   position        INTEGER NOT NULL,
   hinzugefuegt_am TEXT NOT NULL, -- ISO-Datum, z. B. '2023-04-17'
-  FOREIGN KEY (playlist_id) REFERENCES playlist (id),
+  FOREIGN KEY (playlist_id) REFERENCES playlist (id) ON DELETE CASCADE,
   FOREIGN KEY (song_id) REFERENCES song (id)
 );
 

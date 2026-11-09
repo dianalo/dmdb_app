@@ -222,6 +222,29 @@ describe('Haken für die Aufgaben', () => {
   });
 });
 
+describe('ON DELETE CASCADE (Kapitel 7)', () => {
+  it('setzt CASCADE nur auf playlist_song.playlist_id', () => {
+    const kaskaden = spalte(
+      `SELECT m.name || '.' || f."from" FROM sqlite_master m, pragma_foreign_key_list(m.name) f
+       WHERE m.type = 'table' AND f.on_delete = 'CASCADE'`,
+    );
+    expect(kaskaden).toEqual(['playlist_song.playlist_id']);
+  });
+
+  it('löscht mit einer Playlist auch ihre Einträge, ein Song bleibt geschützt', () => {
+    const id = zahl('SELECT playlist_id FROM playlist_song LIMIT 1');
+    db.run('SAVEPOINT kaskade');
+    try {
+      db.run('DELETE FROM playlist WHERE id = ?', [id]);
+      expect(zahl(`SELECT COUNT(*) FROM playlist_song WHERE playlist_id = ${id}`)).toBe(0);
+      expect(() => db.run('DELETE FROM song')).toThrow(/FOREIGN KEY/);
+    } finally {
+      db.run('ROLLBACK TO kaskade');
+      db.run('RELEASE kaskade');
+    }
+  });
+});
+
 describe('Abo (1:1 zu nutzer)', () => {
   it('ordnet jeder nutzer_id höchstens ein Abo zu', () => {
     const anzahl = zahl('SELECT COUNT(*) FROM abo');

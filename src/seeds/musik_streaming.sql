@@ -1,5 +1,5 @@
 -- k♪t Musik-Streaming, Beispieldatenbank der LPU «Datenmodellierung und Datenbanken»
--- Generiert von scripts/generate-seed.ts (Seed 20260921, Version 6). Nicht von Hand editieren.
+-- Generiert von scripts/generate-seed.ts (Seed 20260921, Version 7). Nicht von Hand editieren.
 -- Streaming-Dienst «kanti♪tunes». Künstler:innen, Alben und Songs sind echt (Auswahl, Angaben nach
 -- Wikipedia und MusicBrainz). Nutzer:innen, Abos, Playlists und Bewertungen sind frei erfunden.
 
@@ -70,7 +70,7 @@ CREATE TABLE playlist_song (
   song_id         INTEGER NOT NULL,
   position        INTEGER NOT NULL,
   hinzugefuegt_am TEXT NOT NULL, -- ISO-Datum, z. B. '2023-04-17'
-  FOREIGN KEY (playlist_id) REFERENCES playlist (id),
+  FOREIGN KEY (playlist_id) REFERENCES playlist (id) ON DELETE CASCADE,
   FOREIGN KEY (song_id) REFERENCES song (id)
 );
 
